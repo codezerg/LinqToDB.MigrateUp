@@ -7,6 +7,7 @@
 		<RepositoryUrl>https://github.com/codezerg/LinqToDB.MigrateUp</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<Version>1.0.1</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -24,7 +25,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="linq2db" Version="5.2.2" />
+		<PackageReference Include="linq2db" Version="5.0.0" />
 	</ItemGroup>
 
 </Project>
