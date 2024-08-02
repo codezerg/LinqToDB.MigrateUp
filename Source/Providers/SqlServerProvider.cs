@@ -126,7 +126,7 @@ namespace LinqToDB.MigrateUp.Providers
         {
             var columnsSql = string.Join(", ", columns.Select(c => $"{c.ColumnName} {(c.IsAscending ? "ASC" : "DESC")}"));
 
-            var createIndexSql = $"CREATE INDEX {indexName} ON {tableName} ({columnsSql})";
+            var createIndexSql = $"CREATE INDEX [{indexName}] ON [{tableName}] ({columnsSql})";
 
             DataConnection.Execute(createIndexSql);
         }
