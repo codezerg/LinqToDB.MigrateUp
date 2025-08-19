@@ -1,7 +1,8 @@
 using System.Threading;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Threading.Tasks;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Abstractions
 {
     /// <summary>
     /// Defines the contract for running database migrations.

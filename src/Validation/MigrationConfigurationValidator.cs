@@ -1,7 +1,8 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Linq;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Validation
 {
     /// <summary>
     /// Default implementation of IMigrationConfigurationValidator.

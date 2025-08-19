@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace LinqToDB.MigrateUp
+namespace LinqToDB.MigrateUp.Abstractions
 {
     /// <summary>
     /// Defines the contract for an expression that represents the creation of an index for a specified table during migration tasks.

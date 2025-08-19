@@ -1,8 +1,9 @@
 ﻿using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace LinqToDB.MigrateUp
+namespace LinqToDB.MigrateUp.Abstractions
 {
     /// <summary>
     /// Defines the contract for an expression that represents data import during migration tasks for a specified table.

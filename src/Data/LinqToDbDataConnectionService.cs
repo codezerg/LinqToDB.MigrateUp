@@ -1,10 +1,11 @@
 using LinqToDB.Data;
+using LinqToDB.MigrateUp.Abstractions;
 using LinqToDB.Mapping;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Data
 {
     /// <summary>
     /// Concrete implementation of IDataConnectionService using LinqToDB DataConnection.

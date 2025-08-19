@@ -1,7 +1,8 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Concurrent;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Execution
 {
     /// <summary>
     /// Thread-safe implementation of IMigrationStateManager using concurrent collections.

@@ -1,4 +1,5 @@
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Abstractions
+using LinqToDB.MigrateUp.Abstractions;
 {
     /// <summary>
     /// Provides database-specific SQL query generation for schema operations.

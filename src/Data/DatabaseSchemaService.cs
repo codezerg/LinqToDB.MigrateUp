@@ -1,9 +1,10 @@
 using LinqToDB.MigrateUp.Schema;
+using LinqToDB.MigrateUp.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Data
 {
     /// <summary>
     /// Default implementation of IDatabaseSchemaService using query services and data connection service.

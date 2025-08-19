@@ -1,7 +1,8 @@
 using LinqToDB.MigrateUp.Schema;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Generic;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Abstractions
 {
     /// <summary>
     /// Provides database mutation operations abstracted from specific database implementations.

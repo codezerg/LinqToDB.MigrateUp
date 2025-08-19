@@ -1,6 +1,7 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Abstractions
 {
     /// <summary>
     /// Manages the state of migration operations, tracking what has been created or modified.

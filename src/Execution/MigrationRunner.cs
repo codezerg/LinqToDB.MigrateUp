@@ -1,4 +1,5 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Execution
 {
     /// <summary>
     /// Default implementation of IMigrationRunner that runs database migrations.

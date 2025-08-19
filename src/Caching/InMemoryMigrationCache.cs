@@ -1,4 +1,5 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;

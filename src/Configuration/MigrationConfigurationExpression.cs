@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LinqToDB.MigrateUp
+namespace LinqToDB.MigrateUp.Configuration
 {
     /// <summary>
     /// Represents a configuration expression used during the creation of migration configurations.

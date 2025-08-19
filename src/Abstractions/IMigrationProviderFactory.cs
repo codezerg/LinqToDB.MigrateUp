@@ -1,8 +1,9 @@
 ﻿using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LinqToDB.MigrateUp
+namespace LinqToDB.MigrateUp.Abstractions
 {
     public interface IMigrationProviderFactory
     {

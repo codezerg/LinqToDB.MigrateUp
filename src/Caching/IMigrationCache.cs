@@ -1,4 +1,5 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Generic;
 
 namespace LinqToDB.MigrateUp.Caching

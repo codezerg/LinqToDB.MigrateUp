@@ -1,7 +1,8 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Generic;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Abstractions
 {
     /// <summary>
     /// Configuration for data import operations.

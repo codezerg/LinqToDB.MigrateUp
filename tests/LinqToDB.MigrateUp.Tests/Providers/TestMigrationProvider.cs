@@ -1,6 +1,8 @@
 using LinqToDB.MigrateUp.Providers;
 using LinqToDB.MigrateUp.Schema;
-using LinqToDB.MigrateUp.Services;
+using LinqToDB.MigrateUp.Abstractions;
+using LinqToDB.MigrateUp.Data;
+using LinqToDB.MigrateUp.Execution;
 using LinqToDB.MigrateUp.Tests.Testing;
 
 namespace LinqToDB.MigrateUp.Tests.Providers;

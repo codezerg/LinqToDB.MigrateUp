@@ -1,9 +1,10 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
 using LinqToDB.Mapping;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Abstractions
 {
     /// <summary>
     /// Abstracts database operations to enable testability and separation of concerns.

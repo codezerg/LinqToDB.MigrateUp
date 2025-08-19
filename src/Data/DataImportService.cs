@@ -1,8 +1,9 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Data
 {
     /// <summary>
     /// Default implementation of IDataImportService for data import operations.

@@ -1,10 +1,11 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Execution
 {
     /// <summary>
     /// A hosted service that runs database migrations on application startup.

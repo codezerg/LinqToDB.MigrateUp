@@ -1,7 +1,8 @@
 using System;
-using LinqToDB.MigrateUp.Helpers;
+using LinqToDB.MigrateUp.Abstractions;
+using LinqToDB.MigrateUp.Validation;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Sql
 {
     /// <summary>
     /// Base class for SQL query services with common patterns.

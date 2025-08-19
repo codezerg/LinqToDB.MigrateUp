@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using LinqToDB.MigrateUp.Services;
+using LinqToDB.MigrateUp.Abstractions;
+using LinqToDB.MigrateUp.Execution;
 
 namespace LinqToDB.MigrateUp.Tests.Testing
 {

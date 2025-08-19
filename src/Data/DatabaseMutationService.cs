@@ -1,10 +1,11 @@
-using LinqToDB.MigrateUp.Helpers;
+using LinqToDB.MigrateUp.Validation;
+using LinqToDB.MigrateUp.Abstractions;
 using LinqToDB.MigrateUp.Schema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Data
 {
     /// <summary>
     /// Default implementation of IDatabaseMutationService using query services and data connection service.

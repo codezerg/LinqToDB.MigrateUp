@@ -1,9 +1,10 @@
 ﻿using LinqToDB.MigrateUp.Caching;
+using LinqToDB.MigrateUp.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LinqToDB.MigrateUp
+namespace LinqToDB.MigrateUp.Configuration
 {
     /// <summary>
     /// Configuration options for migrations.

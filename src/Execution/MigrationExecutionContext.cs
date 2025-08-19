@@ -1,8 +1,9 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Execution
 {
     /// <summary>
     /// Provides context and tracking information for migration execution.

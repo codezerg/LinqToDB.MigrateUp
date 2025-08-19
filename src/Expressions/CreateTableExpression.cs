@@ -1,4 +1,5 @@
 ﻿using System;
+using LinqToDB.MigrateUp.Abstractions;
 
 namespace LinqToDB.MigrateUp.Expressions
 {

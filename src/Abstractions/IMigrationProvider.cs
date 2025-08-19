@@ -1,10 +1,11 @@
 ﻿using LinqToDB.Data;
+using LinqToDB.MigrateUp.Abstractions;
 using LinqToDB.MigrateUp.Schema;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LinqToDB.MigrateUp
+namespace LinqToDB.MigrateUp.Abstractions
 {
     /// <summary>
     /// Defines the contract for migration providers.

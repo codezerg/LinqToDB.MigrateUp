@@ -1,4 +1,5 @@
 ﻿using LinqToDB.Data;
+using LinqToDB.MigrateUp.Abstractions;
 using LinqToDB.MigrateUp.Schema;
 using LinqToDB.SqlQuery;
 using System;

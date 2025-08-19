@@ -1,5 +1,6 @@
 using LinqToDB.MigrateUp.Schema;
-using LinqToDB.MigrateUp.Services;
+using LinqToDB.MigrateUp.Abstractions;
+using LinqToDB.MigrateUp.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;

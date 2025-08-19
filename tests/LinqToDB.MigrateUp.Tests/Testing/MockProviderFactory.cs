@@ -1,5 +1,5 @@
 using LinqToDB.MigrateUp;
-using LinqToDB.MigrateUp.Services;
+using LinqToDB.MigrateUp.Abstractions;
 
 namespace LinqToDB.MigrateUp.Tests.Testing
 {

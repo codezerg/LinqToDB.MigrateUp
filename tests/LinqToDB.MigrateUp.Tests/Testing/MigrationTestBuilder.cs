@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Logging;
 using System;
 using LinqToDB.MigrateUp;
-using LinqToDB.MigrateUp.Services;
+using LinqToDB.MigrateUp.Abstractions;
+using LinqToDB.MigrateUp.Configuration;
+using LinqToDB.MigrateUp.Data;
+using LinqToDB.MigrateUp.Execution;
 
 namespace LinqToDB.MigrateUp.Tests.Testing
 {

@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
 using LinqToDB.MigrateUp.Schema;
-using LinqToDB.MigrateUp.Services;
+using LinqToDB.MigrateUp.Abstractions;
+using LinqToDB.MigrateUp.Data;
+using LinqToDB.MigrateUp.Execution;
 using LinqToDB.SqlProvider;
 using LinqToDB.SqlQuery;
 

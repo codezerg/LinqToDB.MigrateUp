@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace LinqToDB.MigrateUp.Helpers
+namespace LinqToDB.MigrateUp.Validation
 {
     /// <summary>
     /// Provides centralized validation logic for the migration library.

@@ -1,5 +1,7 @@
 using FluentAssertions;
-using LinqToDB.MigrateUp.Services;
+using LinqToDB.MigrateUp.Configuration;
+using LinqToDB.MigrateUp.Data;
+using LinqToDB.MigrateUp.Execution;
 using LinqToDB.MigrateUp.Tests.Testing;
 using LinqToDB.MigrateUp.Tests.Infrastructure;
 using LinqToDB.MigrateUp.Tests.TestEntities;

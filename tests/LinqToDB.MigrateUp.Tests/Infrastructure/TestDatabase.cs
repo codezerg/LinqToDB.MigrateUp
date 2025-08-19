@@ -1,6 +1,8 @@
 using LinqToDB;
 using LinqToDB.Data;
-using LinqToDB.MigrateUp.Services;
+using LinqToDB.MigrateUp.Configuration;
+using LinqToDB.MigrateUp.Data;
+using LinqToDB.MigrateUp.Execution;
 using LinqToDB.MigrateUp.Tests.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;

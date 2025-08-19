@@ -1,4 +1,5 @@
 ﻿using LinqToDB.Mapping;
+using LinqToDB.MigrateUp.Abstractions;
 using LinqToDB.MigrateUp.Expressions;
 using System;
 using System.Collections.Generic;

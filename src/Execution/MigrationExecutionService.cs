@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Logging;
+using LinqToDB.MigrateUp.Abstractions;
 using System;
 using System.Linq;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Execution
 {
     /// <summary>
     /// Default implementation of IMigrationExecutionService with comprehensive error handling.

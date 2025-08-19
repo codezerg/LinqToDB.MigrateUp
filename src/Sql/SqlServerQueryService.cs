@@ -1,6 +1,7 @@
 using System.Linq;
+using LinqToDB.MigrateUp.Abstractions;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Sql
 {
     /// <summary>
     /// SQL Server-specific implementation of ISqlQueryService.

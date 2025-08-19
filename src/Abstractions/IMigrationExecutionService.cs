@@ -1,6 +1,7 @@
 using System;
+using LinqToDB.MigrateUp.Abstractions;
 
-namespace LinqToDB.MigrateUp.Services
+namespace LinqToDB.MigrateUp.Abstractions
 {
     /// <summary>
     /// Result of a migration execution operation.
