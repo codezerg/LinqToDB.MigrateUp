@@ -6,27 +6,26 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LinqToDB.MigrateUp.Providers
+namespace LinqToDB.MigrateUp.Providers;
+
+class NullProvider : IMigrationProvider
 {
-    class NullProvider : IMigrationProvider
+    /// <inheritdoc/>
+    public Migration Migration { get; }
+
+
+    public NullProvider(Migration migration)
     {
-        /// <inheritdoc/>
-        public Migration Migration { get; }
+        Migration = migration;
+    }
 
+    /// <inheritdoc/>
+    public void UpdateTableSchema<TEntity>() where TEntity : class
+    {
+    }
 
-        public NullProvider(Migration migration)
-        {
-            Migration = migration;
-        }
-
-        /// <inheritdoc/>
-        public void UpdateTableSchema<TEntity>() where TEntity : class
-        {
-        }
-
-        /// <inheritdoc/>
-        public void EnsureIndex<TEntity>(string indexName, IEnumerable<TableIndexColumn> columns) where TEntity : class
-        {
-        }
+    /// <inheritdoc/>
+    public void EnsureIndex<TEntity>(string indexName, IEnumerable<TableIndexColumn> columns) where TEntity : class
+    {
     }
 }

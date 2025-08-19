@@ -1,66 +1,66 @@
 using System;
+using LinqToDB.MigrateUp.Configuration;
 using LinqToDB.MigrateUp.Abstractions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace LinqToDB.MigrateUp.Execution
+namespace LinqToDB.MigrateUp.Execution;
+
+/// <summary>
+/// A hosted service that runs database migrations on application startup.
+/// </summary>
+public class MigrationHostedService : IHostedService
 {
+    private readonly IMigrationRunner _migrationRunner;
+    private readonly MigrationOptions _options;
+    private readonly ILogger<MigrationHostedService>? _logger;
+
     /// <summary>
-    /// A hosted service that runs database migrations on application startup.
+    /// Initializes a new instance of the MigrationHostedService class.
     /// </summary>
-    public class MigrationHostedService : IHostedService
+    public MigrationHostedService(
+        IMigrationRunner migrationRunner,
+        MigrationOptions options,
+        ILogger<MigrationHostedService>? logger = null)
     {
-        private readonly IMigrationRunner _migrationRunner;
-        private readonly MigrationOptions _options;
-        private readonly ILogger<MigrationHostedService>? _logger;
+        _migrationRunner = migrationRunner ?? throw new ArgumentNullException(nameof(migrationRunner));
+        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _logger = logger;
+    }
 
-        /// <summary>
-        /// Initializes a new instance of the MigrationHostedService class.
-        /// </summary>
-        public MigrationHostedService(
-            IMigrationRunner migrationRunner,
-            MigrationOptions options,
-            ILogger<MigrationHostedService>? logger = null)
+    /// <summary>
+    /// Runs migrations when the application starts.
+    /// </summary>
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        try
         {
-            _migrationRunner = migrationRunner ?? throw new ArgumentNullException(nameof(migrationRunner));
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-            _logger = logger;
+            _logger?.LogInformation("Starting automatic database migrations...");
+            
+            await _migrationRunner.RunAsync(cancellationToken);
+            
+            _logger?.LogInformation("Automatic database migrations completed successfully.");
         }
-
-        /// <summary>
-        /// Runs migrations when the application starts.
-        /// </summary>
-        public async Task StartAsync(CancellationToken cancellationToken)
+        catch (Exception ex)
         {
-            try
+            _logger?.LogError(ex, "Automatic database migration failed");
+            
+            // Only throw if configured to do so, otherwise log and continue
+            if (_options.ThrowOnMigrationFailure)
             {
-                _logger?.LogInformation("Starting automatic database migrations...");
-                
-                await _migrationRunner.RunAsync(cancellationToken);
-                
-                _logger?.LogInformation("Automatic database migrations completed successfully.");
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Automatic database migration failed");
-                
-                // Only throw if configured to do so, otherwise log and continue
-                if (_options.ThrowOnMigrationFailure)
-                {
-                    throw new InvalidOperationException("Database migration failed on startup. See inner exception for details.", ex);
-                }
+                throw new InvalidOperationException("Database migration failed on startup. See inner exception for details.", ex);
             }
         }
+    }
 
-        /// <summary>
-        /// Called when the application is stopping.
-        /// </summary>
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            // Nothing to clean up
-            return Task.CompletedTask;
-        }
+    /// <summary>
+    /// Called when the application is stopping.
+    /// </summary>
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        // Nothing to clean up
+        return Task.CompletedTask;
     }
 }

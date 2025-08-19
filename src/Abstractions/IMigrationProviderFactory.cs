@@ -3,10 +3,9 @@ using LinqToDB.MigrateUp.Abstractions;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LinqToDB.MigrateUp.Abstractions
+namespace LinqToDB.MigrateUp.Abstractions;
+
+public interface IMigrationProviderFactory
 {
-    public interface IMigrationProviderFactory
-    {
-        IMigrationProvider CreateProvider(Migration migration);
-    }
+    IMigrationProvider CreateProvider(Migration migration);
 }

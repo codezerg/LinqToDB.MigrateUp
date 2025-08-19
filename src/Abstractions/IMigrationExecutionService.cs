@@ -1,5 +1,7 @@
 using System;
 using LinqToDB.MigrateUp.Abstractions;
+using LinqToDB.MigrateUp.Configuration;
+using LinqToDB.MigrateUp.Execution;
 
 namespace LinqToDB.MigrateUp.Abstractions
 {

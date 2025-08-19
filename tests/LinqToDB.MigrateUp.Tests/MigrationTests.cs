@@ -162,9 +162,9 @@ public class MigrationTests
         var personCount = connection.GetTable<Person>().Count();
         personCount.Should().Be(2);
         
-        // Products should be empty since they use WhenTableEmpty and table has data
+        // Products should have data since they use WhenTableEmpty and table was just created (empty)
         var productCount = connection.GetTable<Product>().Count();
-        productCount.Should().Be(0);
+        productCount.Should().Be(2);
     }
 
     [Test]
