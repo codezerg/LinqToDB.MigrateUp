@@ -30,22 +30,31 @@ public class SqlServerQueryService : SqlQueryServiceBase
     }
 
     /// <inheritdoc/>
-    public override string BuildGetColumnsQuery(string tableName)
+    public override SqlQueryResult BuildGetColumnsQuery(string tableName)
     {
-        return $@"
+        var sql = $@"
                 SELECT 
                     COLUMN_NAME,
                     DATA_TYPE,
-                    IS_NULLABLE
+                    IS_NULLABLE,
+                    CHARACTER_MAXIMUM_LENGTH,
+                    NUMERIC_PRECISION,
+                    NUMERIC_SCALE
                 FROM INFORMATION_SCHEMA.COLUMNS
                 WHERE TABLE_NAME = '{tableName}'
                 ORDER BY ORDINAL_POSITION";
+        
+        return new SqlQueryResult(
+            sql,
+            QueryResultType.SqlServerInformationSchemaColumns,
+            DatabaseProvider.SqlServer
+        );
     }
 
     /// <inheritdoc/>
-    public override string BuildGetIndexColumnsQuery(string tableName, string indexName)
+    public override SqlQueryResult BuildGetIndexColumnsQuery(string tableName, string indexName)
     {
-        return $@"
+        var sql = $@"
                 SELECT 
                     c.name AS COLUMN_NAME,
                     ic.is_descending_key AS IS_DESCENDING
@@ -55,6 +64,12 @@ public class SqlServerQueryService : SqlQueryServiceBase
                 INNER JOIN sys.tables t ON i.object_id = t.object_id
                 WHERE t.name = '{tableName}' AND i.name = '{indexName}'
                 ORDER BY ic.key_ordinal";
+        
+        return new SqlQueryResult(
+            sql,
+            QueryResultType.SqlServerIndexInfo,
+            DatabaseProvider.SqlServer
+        );
     }
 
 

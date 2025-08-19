@@ -1,6 +1,6 @@
+using LinqToDB.MigrateUp.Abstractions;
 using LinqToDB.MigrateUp.Schema;
 using LinqToDB.MigrateUp.Sql;
-using LinqToDB.MigrateUp.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,44 +75,33 @@ public class DatabaseSchemaService : IDatabaseSchemaService
 
         try
         {
-            var query = _queryService.BuildGetColumnsQuery(tableName);
-            var columns = new List<TableColumn>();
+            var queryResult = _queryService.BuildGetColumnsQuery(tableName);
             
-            // For SQLite, we use PRAGMA table_info which returns structured data
-            if (query.Contains("PRAGMA"))
+            switch (queryResult.ResultType)
             {
-                // SQLite PRAGMA table_info returns: cid, name, type, notnull, dflt_value, pk
-                using (var reader = _dataService.ExecuteReader(query))
-                {
-                    while (reader.Read())
+                case QueryResultType.SqlitePragmaTableInfo:
                     {
-                        columns.Add(new TableColumn
-                        {
-                            ColumnName = reader.GetString(reader.GetOrdinal("name")),
-                            DataType = reader.GetString(reader.GetOrdinal("type")),
-                            IsNullable = reader.GetInt32(reader.GetOrdinal("notnull")) == 0
-                        });
+                        var result = _dataService.Query<SqliteColumnInfo>(queryResult.Sql);
+                        return result.Select(row => new TableColumn(
+                            columnName: row.name,
+                            dataType: row.type,
+                            isNullable: row.notnull == 0
+                        )).ToList();
                     }
-                }
-            }
-            else
-            {
-                // For SQL Server and other databases
-                using (var reader = _dataService.ExecuteReader(query))
-                {
-                    while (reader.Read())
+                    
+                case QueryResultType.SqlServerInformationSchemaColumns:
                     {
-                        columns.Add(new TableColumn
-                        {
-                            ColumnName = reader.GetString(reader.GetOrdinal("COLUMN_NAME")),
-                            DataType = reader.GetString(reader.GetOrdinal("DATA_TYPE")),
-                            IsNullable = reader.GetString(reader.GetOrdinal("IS_NULLABLE")) == "YES"
-                        });
+                        var result = _dataService.Query<SqlServerColumnInfo>(queryResult.Sql);
+                        return result.Select(row => new TableColumn(
+                            columnName: row.COLUMN_NAME,
+                            dataType: row.DATA_TYPE,
+                            isNullable: row.IS_NULLABLE == "YES"
+                        )).ToList();
                     }
-                }
+                    
+                default:
+                    throw new NotSupportedException($"Query result type {queryResult.ResultType} is not supported for GetTableColumns");
             }
-            
-            return columns;
         }
         catch
         {

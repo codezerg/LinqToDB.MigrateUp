@@ -30,10 +30,10 @@ public abstract class SqlQueryServiceBase : ISqlQueryService
     public abstract string BuildIndexExistsQuery(string tableName, string indexName);
 
     /// <inheritdoc/>
-    public abstract string BuildGetColumnsQuery(string tableName);
+    public abstract SqlQueryResult BuildGetColumnsQuery(string tableName);
 
     /// <inheritdoc/>
-    public abstract string BuildGetIndexColumnsQuery(string tableName, string indexName);
+    public abstract SqlQueryResult BuildGetIndexColumnsQuery(string tableName, string indexName);
 
     /// <inheritdoc/>
     public virtual string BuildAddColumnCommand(string tableName, string columnDefinition)

@@ -132,5 +132,21 @@ namespace LinqToDB.MigrateUp.Tests.Testing
             // For testing, return null as we don't have a real data context
             return null;
         }
+
+        /// <inheritdoc/>
+        public IEnumerable<dynamic> Query(string sql)
+        {
+            _executedSql.Add(sql);
+            // Return empty for testing - could be enhanced to return mock data based on SQL
+            return Enumerable.Empty<dynamic>();
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<T> Query<T>(string sql) where T : class
+        {
+            _executedSql.Add(sql);
+            // Return empty for testing - could be enhanced to return mock data based on SQL
+            return Enumerable.Empty<T>();
+        }
     }
 }

@@ -76,4 +76,16 @@ public class LinqToDbDataConnectionService : IDataConnectionService
     {
         return _dataConnection;
     }
+
+    /// <inheritdoc/>
+    public IEnumerable<dynamic> Query(string sql)
+    {
+        return _dataConnection.Query<dynamic>(sql);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<T> Query<T>(string sql) where T : class
+    {
+        return _dataConnection.Query<T>(sql);
+    }
 }

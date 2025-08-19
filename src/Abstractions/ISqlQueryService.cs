@@ -1,3 +1,5 @@
+using LinqToDB.MigrateUp.Sql;
+
 namespace LinqToDB.MigrateUp.Abstractions;
 
 /// <summary>
@@ -24,16 +26,16 @@ public interface ISqlQueryService
     /// Builds a SQL query to get table columns information.
     /// </summary>
     /// <param name="tableName">The name of the table.</param>
-    /// <returns>The SQL query string.</returns>
-    string BuildGetColumnsQuery(string tableName);
+    /// <returns>The SQL query result with metadata.</returns>
+    SqlQueryResult BuildGetColumnsQuery(string tableName);
 
     /// <summary>
     /// Builds a SQL query to get index columns information.
     /// </summary>
     /// <param name="tableName">The name of the table.</param>
     /// <param name="indexName">The name of the index.</param>
-    /// <returns>The SQL query string.</returns>
-    string BuildGetIndexColumnsQuery(string tableName, string indexName);
+    /// <returns>The SQL query result with metadata.</returns>
+    SqlQueryResult BuildGetIndexColumnsQuery(string tableName, string indexName);
 
     /// <summary>
     /// Builds a SQL command to add a column to a table.

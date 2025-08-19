@@ -56,4 +56,19 @@ public interface IDataConnectionService
     /// </summary>
     /// <returns>The mapping schema.</returns>
     MappingSchema GetMappingSchema();
+
+    /// <summary>
+    /// Executes a SQL query and returns a list of dynamic results.
+    /// </summary>
+    /// <param name="sql">The SQL query to execute.</param>
+    /// <returns>The query results.</returns>
+    IEnumerable<dynamic> Query(string sql);
+
+    /// <summary>
+    /// Executes a SQL query and returns a list of strongly-typed results.
+    /// </summary>
+    /// <typeparam name="T">The type to map the results to.</typeparam>
+    /// <param name="sql">The SQL query to execute.</param>
+    /// <returns>The query results.</returns>
+    IEnumerable<T> Query<T>(string sql) where T : class;
 }

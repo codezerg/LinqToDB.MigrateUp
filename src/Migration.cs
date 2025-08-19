@@ -121,6 +121,9 @@ public class Migration
         }
         else
         {
+            var entityType = task.EntityType;
+            var taskType = task.GetType();
+            Logger.LogInformation("Executing migration task {TaskType} for entity {EntityType}", taskType.Name, entityType?.Name ?? "Unknown");
             task.Run(MigrationProvider);
         }
     }

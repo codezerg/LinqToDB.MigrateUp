@@ -20,15 +20,23 @@ public class SQLiteQueryService : SqlQueryServiceBase
     }
 
     /// <inheritdoc/>
-    public override string BuildGetColumnsQuery(string tableName)
+    public override SqlQueryResult BuildGetColumnsQuery(string tableName)
     {
-        return $"PRAGMA table_info({tableName})";
+        return new SqlQueryResult(
+            $"PRAGMA table_info({tableName})",
+            QueryResultType.SqlitePragmaTableInfo,
+            DatabaseProvider.SQLite
+        );
     }
 
     /// <inheritdoc/>
-    public override string BuildGetIndexColumnsQuery(string tableName, string indexName)
+    public override SqlQueryResult BuildGetIndexColumnsQuery(string tableName, string indexName)
     {
-        return $"PRAGMA index_info({indexName})";
+        return new SqlQueryResult(
+            $"PRAGMA index_info({indexName})",
+            QueryResultType.SqlitePragmaIndexInfo,
+            DatabaseProvider.SQLite
+        );
     }
 
 
