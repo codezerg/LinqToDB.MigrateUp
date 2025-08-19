@@ -80,5 +80,26 @@ namespace LinqToDB.MigrateUp.Tests.Testing
             // Mock implementation - no actual database operations
             Migration.StateManager.MarkIndexCreated(indexName);
         }
+
+        /// <inheritdoc/>
+        public void AlterColumn<TEntity>(string tableName, string columnName, Schema.TableColumn newColumn) where TEntity : class
+        {
+            if (ThrowOnOperations)
+                throw new System.InvalidOperationException(ExceptionMessage);
+
+            // Mock implementation - no actual database operations
+        }
+
+        /// <inheritdoc/>
+        public void RenameColumn<TEntity>(string tableName, string oldColumnName, string newColumnName) where TEntity : class
+        {
+            if (ThrowOnOperations)
+                throw new System.InvalidOperationException(ExceptionMessage);
+
+            // Mock implementation - no actual database operations
+        }
+
+        /// <inheritdoc/>
+        public Abstractions.IDatabaseSchemaService SchemaService => throw new System.NotSupportedException("MockMigrationProvider does not support schema operations");
     }
 }

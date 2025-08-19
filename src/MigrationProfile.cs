@@ -53,6 +53,18 @@ public abstract class MigrationProfile
     }
 
     /// <summary>
+    /// Creates an alter column expression for the specified entity type.
+    /// </summary>
+    /// <typeparam name="TEntity">The entity type containing the column to alter.</typeparam>
+    /// <returns>An instance of <see cref="IAlterColumnExpression{TEntity}"/> for altering columns.</returns>
+    public IAlterColumnExpression<TEntity> AlterColumn<TEntity>() where TEntity : class
+    {
+        var expr = new AlterColumnExpression<TEntity>(this);
+        Tasks.Add(expr);
+        return expr;
+    }
+
+    /// <summary>
     /// Gets all migration tasks for a specific entity type.
     /// </summary>
     /// <typeparam name="TEntity">The entity type to filter tasks for.</typeparam>

@@ -68,6 +68,9 @@ public class Migration
     /// <param name="configuration">The migration configuration containing profiles and tasks to execute.</param>
     public void Run(MigrationConfiguration configuration)
     {
+        if (configuration == null)
+            throw new ArgumentNullException(nameof(configuration));
+            
         foreach (var profile in configuration.Profiles)
         {
             foreach (var task in profile.Tasks)
@@ -84,6 +87,9 @@ public class Migration
     /// <param name="configuration">The migration configuration containing profiles and tasks to execute.</param>
     public void RunForEntity<TEntity>(MigrationConfiguration configuration) where TEntity : class
     {
+        if (configuration == null)
+            throw new ArgumentNullException(nameof(configuration));
+            
         var entityType = typeof(TEntity);
         
         foreach (var profile in configuration.Profiles)

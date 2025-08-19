@@ -35,4 +35,27 @@ public interface IMigrationProvider
     /// <param name="indexDefinition">The definition of the index structure.</param>
     /// <returns>A boolean indicating whether changes were made to the index.</returns>
     void EnsureIndex<TEntity>(string indexName, IEnumerable<TableIndexColumn> columns) where TEntity : class;
+
+    /// <summary>
+    /// Alters a column in the database table.
+    /// </summary>
+    /// <typeparam name="TEntity">The entity type representing the database table.</typeparam>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="columnName">The name of the column to alter.</param>
+    /// <param name="newColumn">The new column definition.</param>
+    void AlterColumn<TEntity>(string tableName, string columnName, TableColumn newColumn) where TEntity : class;
+
+    /// <summary>
+    /// Renames a column in the database table.
+    /// </summary>
+    /// <typeparam name="TEntity">The entity type representing the database table.</typeparam>
+    /// <param name="tableName">The name of the table.</param>
+    /// <param name="oldColumnName">The current name of the column.</param>
+    /// <param name="newColumnName">The new name for the column.</param>
+    void RenameColumn<TEntity>(string tableName, string oldColumnName, string newColumnName) where TEntity : class;
+
+    /// <summary>
+    /// Gets the database schema service.
+    /// </summary>
+    IDatabaseSchemaService SchemaService { get; }
 }

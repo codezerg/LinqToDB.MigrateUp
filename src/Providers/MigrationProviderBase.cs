@@ -9,6 +9,7 @@ using LinqToDB.MigrateUp.Data;
 using LinqToDB.MigrateUp.Execution;
 using LinqToDB.SqlProvider;
 using LinqToDB.SqlQuery;
+using Microsoft.Extensions.Logging;
 
 namespace LinqToDB.MigrateUp.Providers;
 
@@ -167,4 +168,128 @@ public class MigrationProviderBase : IMigrationProvider
         StateManager.MarkIndexCreated(indexName);
     }
 
+    /// <inheritdoc/>
+    public virtual void AlterColumn<TEntity>(string tableName, string columnName, TableColumn newColumn) where TEntity : class
+    {
+        if (string.IsNullOrWhiteSpace(tableName))
+            throw new ArgumentException("Table name cannot be null or whitespace.", nameof(tableName));
+        
+        if (string.IsNullOrWhiteSpace(columnName))
+            throw new ArgumentException("Column name cannot be null or whitespace.", nameof(columnName));
+        
+        if (newColumn == null)
+            throw new ArgumentNullException(nameof(newColumn));
+
+        // For SQLite, we need special handling as it doesn't support most ALTER COLUMN operations
+        var dataContext = Migration.DataService.GetDataContext();
+        
+        // Check if it's a DataConnection and get the actual provider
+        bool isSQLite = false;
+        if (dataContext is DataConnection dataConnection)
+        {
+            var providerName = dataConnection.DataProvider?.Name;
+            isSQLite = providerName?.Contains("SQLite", StringComparison.OrdinalIgnoreCase) == true;
+        }
+        else
+        {
+            // Fallback to type name checking
+            var typeName = dataContext?.GetType().Name;
+            var fullName = dataContext?.GetType().FullName;
+            isSQLite = typeName?.Contains("SQLite", StringComparison.OrdinalIgnoreCase) == true || 
+                       fullName?.Contains("SQLite", StringComparison.OrdinalIgnoreCase) == true;
+        }
+        
+        if (isSQLite)
+        {
+            AlterColumnForSQLite<TEntity>(tableName, columnName, newColumn);
+        }
+        else
+        {
+            // Standard ALTER COLUMN for other databases
+            MutationService.AlterTableColumn(tableName, columnName, newColumn);
+        }
+    }
+
+    /// <inheritdoc/>
+    public virtual void RenameColumn<TEntity>(string tableName, string oldColumnName, string newColumnName) where TEntity : class
+    {
+        if (string.IsNullOrWhiteSpace(tableName))
+            throw new ArgumentException("Table name cannot be null or whitespace.", nameof(tableName));
+        
+        if (string.IsNullOrWhiteSpace(oldColumnName))
+            throw new ArgumentException("Old column name cannot be null or whitespace.", nameof(oldColumnName));
+        
+        if (string.IsNullOrWhiteSpace(newColumnName))
+            throw new ArgumentException("New column name cannot be null or whitespace.", nameof(newColumnName));
+
+        // SQLite supports RENAME COLUMN since version 3.25.0 (2018)
+        var sql = $"ALTER TABLE {tableName} RENAME COLUMN {oldColumnName} TO {newColumnName}";
+        Migration.DataService.Execute(sql);
+    }
+
+    /// <summary>
+    /// Handles column alteration for SQLite by recreating the table.
+    /// </summary>
+    private void AlterColumnForSQLite<TEntity>(string tableName, string columnName, TableColumn newColumn) where TEntity : class
+    {
+        var tempTableName = $"{tableName}_temp_{Guid.NewGuid():N}";
+        
+        // Get current columns and replace the one being altered
+        var columns = SchemaService.GetTableColumns(tableName).ToList();
+        var columnIndex = columns.FindIndex(c => 
+            string.Equals(c.ColumnName, columnName, StringComparison.OrdinalIgnoreCase));
+        
+        if (columnIndex < 0)
+            throw new InvalidOperationException($"Column {columnName} not found in table {tableName}");
+        
+        // Important: Use the new column definition, but preserve the correct column name
+        // The newColumn might have the wrong name if it was created with just the property name
+        var updatedColumn = new TableColumn(
+            columnName: columns[columnIndex].ColumnName,  // Keep original column name from DB
+            dataType: newColumn.DataType,
+            isNullable: newColumn.IsNullable
+        );
+        columns[columnIndex] = updatedColumn;
+        
+        // Build CREATE TABLE statement for temp table
+        var columnDefinitions = columns.Select(c => 
+            $"{c.ColumnName} {c.DataType} {(c.IsNullable ? "NULL" : "NOT NULL")}");
+        
+        var createTableSql = $"CREATE TABLE {tempTableName} ({string.Join(", ", columnDefinitions)})";
+        
+        // Execute table recreation in a transaction-like manner
+        try
+        {
+            // 1. Create temporary table with new schema
+            Migration.DataService.Execute(createTableSql);
+            
+            // 2. Copy data from original table
+            var columnNames = string.Join(", ", columns.Select(c => c.ColumnName));
+            var copySql = $"INSERT INTO {tempTableName} ({columnNames}) SELECT {columnNames} FROM {tableName}";
+            Migration.DataService.Execute(copySql);
+            
+            // 3. Drop original table
+            Migration.DataService.Execute($"DROP TABLE {tableName}");
+            
+            // 4. Rename temporary table to original name
+            Migration.DataService.Execute($"ALTER TABLE {tempTableName} RENAME TO {tableName}");
+            
+        }
+        catch (Exception ex)
+        {
+            Migration.Logger?.LogError(ex, "AlterColumn SQLite failed for column {Column} in table {Table}", columnName, tableName);
+            
+            // Try to clean up temp table if it exists
+            try
+            {
+                Migration.DataService.Execute($"DROP TABLE IF EXISTS {tempTableName}");
+            }
+            catch { }
+            
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    IDatabaseSchemaService IMigrationProvider.SchemaService => SchemaService;
 }

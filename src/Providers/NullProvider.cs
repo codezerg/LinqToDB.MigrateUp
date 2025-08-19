@@ -28,4 +28,17 @@ class NullProvider : IMigrationProvider
     public void EnsureIndex<TEntity>(string indexName, IEnumerable<TableIndexColumn> columns) where TEntity : class
     {
     }
+
+    /// <inheritdoc/>
+    public void AlterColumn<TEntity>(string tableName, string columnName, TableColumn newColumn) where TEntity : class
+    {
+    }
+
+    /// <inheritdoc/>
+    public void RenameColumn<TEntity>(string tableName, string oldColumnName, string newColumnName) where TEntity : class
+    {
+    }
+
+    /// <inheritdoc/>
+    public IDatabaseSchemaService SchemaService => throw new NotSupportedException("NullProvider does not support schema operations");
 }
