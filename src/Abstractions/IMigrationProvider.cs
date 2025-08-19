@@ -46,15 +46,6 @@ public interface IMigrationProvider
     void AlterColumn<TEntity>(string tableName, string columnName, TableColumn newColumn) where TEntity : class;
 
     /// <summary>
-    /// Renames a column in the database table.
-    /// </summary>
-    /// <typeparam name="TEntity">The entity type representing the database table.</typeparam>
-    /// <param name="tableName">The name of the table.</param>
-    /// <param name="oldColumnName">The current name of the column.</param>
-    /// <param name="newColumnName">The new name for the column.</param>
-    void RenameColumn<TEntity>(string tableName, string oldColumnName, string newColumnName) where TEntity : class;
-
-    /// <summary>
     /// Gets the database schema service.
     /// </summary>
     IDatabaseSchemaService SchemaService { get; }

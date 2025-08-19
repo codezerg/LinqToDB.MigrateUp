@@ -15,7 +15,6 @@ public sealed class AlterColumnExpression<TEntity> : IMigrationTask, IAlterColum
     where TEntity : class
 {
     private string? _columnName;
-    private string? _newColumnName;
     private string? _newDataType;
     private bool? _isNullable;
     private string? _defaultValue;
@@ -99,16 +98,6 @@ public sealed class AlterColumnExpression<TEntity> : IMigrationTask, IAlterColum
         return this;
     }
 
-    /// <inheritdoc/>
-    public IAlterColumnExpression<TEntity> RenameTo(string newName)
-    {
-        if (string.IsNullOrWhiteSpace(newName))
-            throw new ArgumentException("New column name cannot be null or empty", nameof(newName));
-
-        _newColumnName = newName;
-        return this;
-    }
-
     /// <summary>
     /// Executes the column alteration task.
     /// </summary>
@@ -123,14 +112,6 @@ public sealed class AlterColumnExpression<TEntity> : IMigrationTask, IAlterColum
             throw new InvalidOperationException("Column name must be specified using Column() method");
 
         var tableName = provider.Migration.GetEntityName<TEntity>();
-        
-
-        // Handle column rename
-        if (!string.IsNullOrWhiteSpace(_newColumnName))
-        {
-            provider.RenameColumn<TEntity>(tableName, _columnName, _newColumnName);
-            _columnName = _newColumnName; // Update for subsequent operations
-        }
 
         // Build the new column definition if any changes are specified
         if (_newDataType != null || _isNullable.HasValue || _defaultValue != null)

@@ -41,11 +41,4 @@ public interface IAlterColumnExpression<TEntity> where TEntity : class
     /// <param name="defaultValue">The default value SQL expression.</param>
     /// <returns>The alter column expression for fluent configuration.</returns>
     IAlterColumnExpression<TEntity> WithDefault(string defaultValue);
-
-    /// <summary>
-    /// Renames the column.
-    /// </summary>
-    /// <param name="newName">The new column name.</param>
-    /// <returns>The alter column expression for fluent configuration.</returns>
-    IAlterColumnExpression<TEntity> RenameTo(string newName);
 }

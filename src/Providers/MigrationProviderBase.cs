@@ -210,22 +210,6 @@ public class MigrationProviderBase : IMigrationProvider
         }
     }
 
-    /// <inheritdoc/>
-    public virtual void RenameColumn<TEntity>(string tableName, string oldColumnName, string newColumnName) where TEntity : class
-    {
-        if (string.IsNullOrWhiteSpace(tableName))
-            throw new ArgumentException("Table name cannot be null or whitespace.", nameof(tableName));
-        
-        if (string.IsNullOrWhiteSpace(oldColumnName))
-            throw new ArgumentException("Old column name cannot be null or whitespace.", nameof(oldColumnName));
-        
-        if (string.IsNullOrWhiteSpace(newColumnName))
-            throw new ArgumentException("New column name cannot be null or whitespace.", nameof(newColumnName));
-
-        // SQLite supports RENAME COLUMN since version 3.25.0 (2018)
-        var sql = $"ALTER TABLE {tableName} RENAME COLUMN {oldColumnName} TO {newColumnName}";
-        Migration.DataService.Execute(sql);
-    }
 
     /// <summary>
     /// Handles column alteration for SQLite by recreating the table.

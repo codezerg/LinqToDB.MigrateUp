@@ -155,38 +155,6 @@ public class AlterColumnFeatureTests
         Assert.That(columnType.Contains("VARCHAR(200)"), Is.True, $"Expected VARCHAR(200) but got {columnType}");
     }
 
-    [Test]
-    public void AlterColumn_CanRenameColumn()
-    {
-        // Arrange - First create table
-        var migration = _database.CreateMigration();
-        var createConfig = new MigrationConfiguration(cfg =>
-        {
-            cfg.AddProfile(new CreateTestTableProfile());
-        });
-        migration.Run(createConfig);
-
-        // Insert data
-        _connection.Insert(new AlterTestEntity { Id = 1, Name = "Test", OptionalValue = 100 });
-
-        // Act - Rename column
-        var alterConfig = new MigrationConfiguration(cfg =>
-        {
-            cfg.AddProfile(new RenameColumnProfile());
-        });
-        migration.Run(alterConfig);
-
-        // Assert - Check that column was renamed
-        var columns = _connection.Query<dynamic>("PRAGMA table_info(AlterTestTable)").ToList();
-        var hasOldColumn = columns.Any(c => (string)c.name == "OptionalValue");
-        var hasNewColumn = columns.Any(c => (string)c.name == "RequiredValue");
-        hasOldColumn.Should().BeFalse("Old column name should not exist");
-        hasNewColumn.Should().BeTrue("New column name should exist");
-
-        // Verify data is preserved
-        var dataScalar = _connection.Execute<int>("SELECT RequiredValue FROM AlterTestTable WHERE Id = 1");
-        Assert.That(dataScalar, Is.EqualTo(100), "Data should be preserved");
-    }
 
     // Test profiles
     private class CreateTestTableProfile : MigrationProfile
@@ -214,16 +182,6 @@ public class AlterColumnFeatureTests
             this.AlterColumn<AlterTestEntity>()
                 .Column(e => e.Name)
                 .ToType("VARCHAR(200)");
-        }
-    }
-
-    private class RenameColumnProfile : MigrationProfile
-    {
-        public RenameColumnProfile()
-        {
-            this.AlterColumn<AlterTestEntity>()
-                .Column(e => e.OptionalValue)
-                .RenameTo("RequiredValue");
         }
     }
 }

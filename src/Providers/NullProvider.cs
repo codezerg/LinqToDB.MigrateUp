@@ -35,10 +35,5 @@ class NullProvider : IMigrationProvider
     }
 
     /// <inheritdoc/>
-    public void RenameColumn<TEntity>(string tableName, string oldColumnName, string newColumnName) where TEntity : class
-    {
-    }
-
-    /// <inheritdoc/>
     public IDatabaseSchemaService SchemaService => throw new NotSupportedException("NullProvider does not support schema operations");
 }
