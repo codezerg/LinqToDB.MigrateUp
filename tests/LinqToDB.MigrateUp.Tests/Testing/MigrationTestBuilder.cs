@@ -1,7 +1,9 @@
-using LinqToDB.MigrateUp.Logging;
+using Microsoft.Extensions.Logging;
 using System;
+using LinqToDB.MigrateUp;
+using LinqToDB.MigrateUp.Services;
 
-namespace LinqToDB.MigrateUp.Services.Testing
+namespace LinqToDB.MigrateUp.Tests.Testing
 {
     /// <summary>
     /// Builder pattern for creating Migration instances with configurable dependencies for testing.
@@ -11,7 +13,7 @@ namespace LinqToDB.MigrateUp.Services.Testing
         private IDataConnectionService _dataService;
         private IMigrationStateManager _stateManager;
         private IMigrationProviderFactory _providerFactory;
-        private IMigrationLogger _logger;
+        private ILogger<Migration> _logger;
         private MigrationOptions _options;
 
         /// <summary>
@@ -22,7 +24,7 @@ namespace LinqToDB.MigrateUp.Services.Testing
             _dataService = new MockDataConnectionService();
             _stateManager = new MockMigrationStateManager();
             _providerFactory = new MockProviderFactory();
-            _logger = new TestMigrationLogger();
+            _logger = new TestLogger<Migration>();
             _options = new MigrationOptions();
         }
 
@@ -64,7 +66,7 @@ namespace LinqToDB.MigrateUp.Services.Testing
         /// </summary>
         /// <param name="logger">The migration logger.</param>
         /// <returns>The builder instance for method chaining.</returns>
-        public MigrationTestBuilder WithLogger(IMigrationLogger logger)
+        public MigrationTestBuilder WithLogger(ILogger<Migration> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             return this;
@@ -140,7 +142,7 @@ namespace LinqToDB.MigrateUp.Services.Testing
         /// Gets the configured data service as a MockDataConnectionService.
         /// </summary>
         /// <returns>The mock data connection service if configured, null otherwise.</returns>
-        public MockDataConnectionService GetMockDataService()
+        public MockDataConnectionService? GetMockDataService()
         {
             return _dataService as MockDataConnectionService;
         }
@@ -149,18 +151,18 @@ namespace LinqToDB.MigrateUp.Services.Testing
         /// Gets the configured state manager as a MockMigrationStateManager.
         /// </summary>
         /// <returns>The mock migration state manager if configured, null otherwise.</returns>
-        public MockMigrationStateManager GetMockStateManager()
+        public MockMigrationStateManager? GetMockStateManager()
         {
             return _stateManager as MockMigrationStateManager;
         }
 
         /// <summary>
-        /// Gets the configured logger as a TestMigrationLogger.
+        /// Gets the configured logger as a TestLogger.
         /// </summary>
-        /// <returns>The test migration logger if configured, null otherwise.</returns>
-        public TestMigrationLogger GetTestLogger()
+        /// <returns>The test logger if configured, null otherwise.</returns>
+        public TestLogger<Migration>? GetTestLogger()
         {
-            return _logger as TestMigrationLogger;
+            return _logger as TestLogger<Migration>;
         }
     }
 }

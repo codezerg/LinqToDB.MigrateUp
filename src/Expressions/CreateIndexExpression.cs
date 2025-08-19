@@ -16,7 +16,7 @@ namespace LinqToDB.MigrateUp.Expressions
         /// <inheritdoc/>
         public Type EntityType => typeof(Table);
 
-        public string ProvidedIndexName { get; set; }
+        public string? ProvidedIndexName { get; set; }
         public List<TableIndexColumn> Columns { get; } = new List<TableIndexColumn>();
 
 
@@ -45,7 +45,13 @@ namespace LinqToDB.MigrateUp.Expressions
             var memberExpression = columnSelector.Body as MemberExpression;
             if (memberExpression == null)
             {
-                throw new ArgumentException("columnSelector");
+                throw new ArgumentException("Invalid column selector expression. Only simple member access is supported.", nameof(columnSelector));
+            }
+
+            // Ensure the member expression is directly on the parameter (not nested property access)
+            if (memberExpression.Expression?.NodeType != ExpressionType.Parameter)
+            {
+                throw new ArgumentException("Invalid column selector expression. Only direct property access on the entity is supported.", nameof(columnSelector));
             }
 
             string name = memberExpression.Member.Name;
@@ -70,12 +76,12 @@ namespace LinqToDB.MigrateUp.Expressions
             }
 
             var tableIndexKey = tableName + ":" + indexName;
-            if (migration.IndexesCreated.Contains(tableIndexKey))
+            if (migration.StateManager.IsIndexCreated(tableIndexKey))
                 return;
 
             provider.EnsureIndex<Table>(indexName, Columns);
 
-            migration.IndexesCreated.Add(tableIndexKey);
+            migration.StateManager.MarkIndexCreated(tableIndexKey);
         }
     }
 }

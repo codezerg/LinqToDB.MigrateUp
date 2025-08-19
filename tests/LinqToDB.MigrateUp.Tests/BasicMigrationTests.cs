@@ -1,9 +1,11 @@
 using FluentAssertions;
 using LinqToDB;
 using LinqToDB.Data;
+using LinqToDB.MigrateUp.Tests.Testing;
 using LinqToDB.MigrateUp.Tests.Infrastructure;
 using LinqToDB.MigrateUp.Tests.TestEntities;
 using LinqToDB.MigrateUp.Tests.TestProfiles;
+using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 
 namespace LinqToDB.MigrateUp.Tests;
@@ -12,13 +14,13 @@ namespace LinqToDB.MigrateUp.Tests;
 public class BasicMigrationTests
 {
     private TestDatabase _database = null!;
-    private TestMigrationLogger _logger = null!;
+    private TestLogger<Migration> _logger = null!;
 
     [SetUp]
     public void SetUp()
     {
         _database = new TestDatabase();
-        _logger = new TestMigrationLogger();
+        _logger = new TestLogger<Migration>();
     }
 
     [TearDown]
@@ -104,7 +106,7 @@ public class BasicMigrationTests
         migration.Run(configuration);
 
         // Assert
-        migration.TablesCreated.Should().NotBeEmpty();
+        migration.StateManager.IsTableCreated("Persons").Should().BeTrue();
     }
 
     [Test]
@@ -121,7 +123,7 @@ public class BasicMigrationTests
         migration.Run(configuration);
 
         // Assert
-        migration.IndexesCreated.Should().NotBeEmpty();
+        migration.StateManager.IsIndexCreated("IX_Persons_LastName").Should().BeTrue();
     }
 
     private static bool TableExists(DataConnection connection, string tableName)

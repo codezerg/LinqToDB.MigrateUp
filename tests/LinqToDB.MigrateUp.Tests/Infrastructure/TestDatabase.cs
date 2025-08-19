@@ -1,9 +1,9 @@
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.MigrateUp.Services;
-using LinqToDB.MigrateUp.Services.Testing;
-using LinqToDB.MigrateUp.Logging;
+using LinqToDB.MigrateUp.Tests.Testing;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Logging;
 
 namespace LinqToDB.MigrateUp.Tests.Infrastructure;
 
@@ -27,9 +27,12 @@ public class TestDatabase : IDisposable
         return _dataConnection;
     }
 
-    public Migration CreateMigration(MigrationOptions? options = null, IMigrationLogger? logger = null)
+    public Migration CreateMigration(MigrationOptions? options = null, ILogger<Migration>? logger = null)
     {
-        return new Migration(_dataConnection, options, logger: logger ?? new TestMigrationLogger());
+        var dataService = new LinqToDbDataConnectionService(_dataConnection);
+        var stateManager = new MigrationStateManager();
+        var providerFactory = new DefaultMigrationProviderFactory();
+        return new Migration(dataService, stateManager, providerFactory, logger ?? new TestLogger<Migration>(), options);
     }
 
     public MigrationTestBuilder CreateMigrationBuilder()

@@ -10,14 +10,14 @@ namespace LinqToDB.MigrateUp.Caching
     /// </summary>
     public class InMemoryMigrationCache : IMigrationCache
     {
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, HashSet<string>>> _cache;
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ConcurrentDictionary<string, byte>>> _cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InMemoryMigrationCache"/> class.
         /// </summary>
         public InMemoryMigrationCache()
         {
-            _cache = new ConcurrentDictionary<string, ConcurrentDictionary<string, HashSet<string>>>();
+            _cache = new ConcurrentDictionary<string, ConcurrentDictionary<string, ConcurrentDictionary<string, byte>>>();
         }
 
         /// <inheritdoc/>
@@ -31,7 +31,7 @@ namespace LinqToDB.MigrateUp.Caching
 
             return _cache.TryGetValue(entityKey, out var entityCache) &&
                    entityCache.TryGetValue(taskKey, out var taskHashes) &&
-                   taskHashes.Contains(taskHash);
+                   taskHashes.ContainsKey(taskHash);
         }
 
         /// <inheritdoc/>
@@ -43,19 +43,16 @@ namespace LinqToDB.MigrateUp.Caching
             var entityKey = GetEntityKey(entityType);
             var taskKey = GetTaskKey(taskType);
 
-            var entityCache = _cache.GetOrAdd(entityKey, _ => new ConcurrentDictionary<string, HashSet<string>>());
-            var taskHashes = entityCache.GetOrAdd(taskKey, _ => new HashSet<string>());
+            var entityCache = _cache.GetOrAdd(entityKey, _ => new ConcurrentDictionary<string, ConcurrentDictionary<string, byte>>());
+            var taskHashes = entityCache.GetOrAdd(taskKey, _ => new ConcurrentDictionary<string, byte>());
 
-            lock (taskHashes)
-            {
-                taskHashes.Add(taskHash);
-            }
+            taskHashes.TryAdd(taskHash, 0);
         }
 
         /// <inheritdoc/>
         public IEnumerable<Type> GetCachedEntityTypes()
         {
-            return _cache.Keys.Select(key => Type.GetType(key)).Where(type => type != null);
+            return _cache.Keys.Select(key => Type.GetType(key)).Where(type => type != null)!;
         }
 
         /// <inheritdoc/>
@@ -74,7 +71,7 @@ namespace LinqToDB.MigrateUp.Caching
             _cache.Clear();
         }
 
-        private static string GetEntityKey(Type entityType) => entityType.AssemblyQualifiedName ?? entityType.FullName;
+        private static string GetEntityKey(Type entityType) => entityType.AssemblyQualifiedName ?? entityType.FullName ?? entityType.Name;
         private static string GetTaskKey(Type taskType) => taskType.Name;
     }
 }

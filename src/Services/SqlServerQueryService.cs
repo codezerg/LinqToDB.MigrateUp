@@ -5,10 +5,13 @@ namespace LinqToDB.MigrateUp.Services
     /// <summary>
     /// SQL Server-specific implementation of ISqlQueryService.
     /// </summary>
-    public class SqlServerQueryService : ISqlQueryService
+    public class SqlServerQueryService : SqlQueryServiceBase
     {
         /// <inheritdoc/>
-        public string BuildTableExistsQuery(string tableName)
+        protected override string IdentifierFormat => "[{0}]";
+
+        /// <inheritdoc/>
+        public override string BuildTableExistsQuery(string tableName)
         {
             return $@"
                 SELECT CASE WHEN EXISTS (
@@ -18,7 +21,7 @@ namespace LinqToDB.MigrateUp.Services
         }
 
         /// <inheritdoc/>
-        public string BuildIndexExistsQuery(string tableName, string indexName)
+        public override string BuildIndexExistsQuery(string tableName, string indexName)
         {
             return $@"
                 SELECT CASE WHEN EXISTS (
@@ -29,7 +32,7 @@ namespace LinqToDB.MigrateUp.Services
         }
 
         /// <inheritdoc/>
-        public string BuildGetColumnsQuery(string tableName)
+        public override string BuildGetColumnsQuery(string tableName)
         {
             return $@"
                 SELECT 
@@ -42,7 +45,7 @@ namespace LinqToDB.MigrateUp.Services
         }
 
         /// <inheritdoc/>
-        public string BuildGetIndexColumnsQuery(string tableName, string indexName)
+        public override string BuildGetIndexColumnsQuery(string tableName, string indexName)
         {
             return $@"
                 SELECT 
@@ -56,27 +59,16 @@ namespace LinqToDB.MigrateUp.Services
                 ORDER BY ic.key_ordinal";
         }
 
-        /// <inheritdoc/>
-        public string BuildAddColumnCommand(string tableName, string columnDefinition)
-        {
-            return $"ALTER TABLE [{tableName}] ADD {columnDefinition}";
-        }
 
         /// <inheritdoc/>
-        public string BuildAlterColumnCommand(string tableName, string columnName, string newColumnDefinition)
+        public override string BuildAlterColumnCommand(string tableName, string columnName, string newColumnDefinition)
         {
             return $"ALTER TABLE [{tableName}] ALTER COLUMN [{columnName}] {newColumnDefinition}";
         }
 
-        /// <inheritdoc/>
-        public string BuildCreateIndexCommand(string tableName, string indexName, string[] columnNames)
-        {
-            var columns = string.Join(", ", columnNames.Select(c => $"[{c}]"));
-            return $"CREATE INDEX [{indexName}] ON [{tableName}] ({columns})";
-        }
 
         /// <inheritdoc/>
-        public string BuildDropIndexCommand(string tableName, string indexName)
+        public override string BuildDropIndexCommand(string tableName, string indexName)
         {
             return $"DROP INDEX [{indexName}] ON [{tableName}]";
         }

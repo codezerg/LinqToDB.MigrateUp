@@ -1,4 +1,7 @@
-namespace LinqToDB.MigrateUp.Services.Testing
+using LinqToDB.MigrateUp;
+using LinqToDB.MigrateUp.Services;
+
+namespace LinqToDB.MigrateUp.Tests.Testing
 {
     /// <summary>
     /// Mock implementation of IMigrationProviderFactory for testing purposes.
@@ -8,7 +11,7 @@ namespace LinqToDB.MigrateUp.Services.Testing
         /// <summary>
         /// Gets or sets the provider instance to return from CreateProvider.
         /// </summary>
-        public IMigrationProvider Provider { get; set; }
+        public IMigrationProvider? Provider { get; set; }
 
         /// <summary>
         /// Gets or sets whether to create a mock provider automatically if none is set.
@@ -64,7 +67,7 @@ namespace LinqToDB.MigrateUp.Services.Testing
                 throw new System.InvalidOperationException(ExceptionMessage);
 
             // Mock implementation - no actual database operations
-            var tableName = Migration.GetEntityName<TEntity>();
+            var tableName = Migration.DataService.GetEntityName<TEntity>();
             Migration.StateManager.MarkTableCreated(tableName);
         }
 

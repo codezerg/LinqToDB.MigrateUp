@@ -14,12 +14,12 @@ namespace LinqToDB.MigrateUp.Services
         /// <summary>
         /// Gets or sets the currently executing migration task.
         /// </summary>
-        public IMigrationTask CurrentTask { get; set; }
+        public IMigrationTask? CurrentTask { get; set; }
 
         /// <summary>
         /// Gets or sets the current entity type being processed.
         /// </summary>
-        public Type CurrentEntityType { get; set; }
+        public Type? CurrentEntityType { get; set; }
 
         /// <summary>
         /// Gets the elapsed time since execution started.
@@ -100,7 +100,7 @@ namespace LinqToDB.MigrateUp.Services
         /// Records that a task has completed successfully.
         /// </summary>
         /// <param name="task">The completed task.</param>
-        public void RecordTaskCompleted(IMigrationTask task)
+        public void RecordTaskCompleted(IMigrationTask? task)
         {
             if (task != null)
             {
@@ -112,7 +112,7 @@ namespace LinqToDB.MigrateUp.Services
         /// Records an error that occurred during execution.
         /// </summary>
         /// <param name="error">The error that occurred.</param>
-        public void RecordError(Exception error)
+        public void RecordError(Exception? error)
         {
             if (error != null)
             {

@@ -12,10 +12,10 @@ namespace LinqToDB.MigrateUp.Services
         private readonly ConcurrentDictionary<string, bool> _indexesCreated = new ConcurrentDictionary<string, bool>();
 
         /// <inheritdoc/>
-        public event EventHandler<string> TableCreated;
+        public event EventHandler<string>? TableCreated;
 
         /// <inheritdoc/>
-        public event EventHandler<string> IndexCreated;
+        public event EventHandler<string>? IndexCreated;
 
         /// <inheritdoc/>
         public void MarkTableCreated(string tableName)

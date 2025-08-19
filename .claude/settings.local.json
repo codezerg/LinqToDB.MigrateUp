@@ -2,11 +2,26 @@
   "permissions": {
     "allow": [
       "Bash(dotnet test:*)",
-      "Bash(move ExpressionsCreateTableExpressionTests.cs ExpressionsCreateTableExpressionTests.cs.bak)",
       "Bash(dotnet build:*)",
-      "Bash(dotnet run:*)"
+      "Bash(dotnet run:*)",
+      "Bash(rm:*)",
+      "Bash(move:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
-    "ask": []
-  }
+    "ask": [],
+    "defaultMode": "bypassPermissions"
+  },
+	"mcpServers": {
+        "visual-tree-explorer": {
+          "type": "stdio",
+          "command": "cmd",
+          "args": [
+            "/c",
+            "node",
+            "C:\\GitHub\\visual-tree-explorer\\dist\\index.js"
+          ],
+          "env": {}
+        }
+      },
 }

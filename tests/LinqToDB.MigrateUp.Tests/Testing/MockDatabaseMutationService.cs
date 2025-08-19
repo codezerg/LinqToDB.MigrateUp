@@ -1,15 +1,21 @@
 using LinqToDB.MigrateUp.Schema;
+using LinqToDB.MigrateUp.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LinqToDB.MigrateUp.Services.Testing
+namespace LinqToDB.MigrateUp.Tests.Testing
 {
     /// <summary>
     /// Mock implementation of IDatabaseMutationService for testing purposes.
     /// </summary>
     public class MockDatabaseMutationService : IDatabaseMutationService
     {
+        /// <summary>
+        /// Gets the list of tables that have been created.
+        /// </summary>
+        public List<(Type EntityType, string TableName)> CreatedTables { get; } = new List<(Type, string)>();
+
         /// <summary>
         /// Gets the list of columns that have been created.
         /// </summary>
@@ -45,12 +51,30 @@ namespace LinqToDB.MigrateUp.Services.Testing
         /// </summary>
         public void Reset()
         {
+            CreatedTables.Clear();
             CreatedColumns.Clear();
             AlteredColumns.Clear();
             CreatedIndexes.Clear();
             DroppedIndexes.Clear();
             ThrowOnOperations = false;
             ExceptionMessage = "Mock database operation failed";
+        }
+
+        /// <inheritdoc/>
+        public void CreateTable<TEntity>() where TEntity : class
+        {
+            if (ThrowOnOperations)
+                throw new InvalidOperationException(ExceptionMessage);
+
+            var entityType = typeof(TEntity);
+            
+            // Check for [Table] attribute to get the correct table name
+            var tableAttribute = entityType.GetCustomAttributes(typeof(LinqToDB.Mapping.TableAttribute), false)
+                .Cast<LinqToDB.Mapping.TableAttribute>()
+                .FirstOrDefault();
+            
+            var tableName = tableAttribute?.Name ?? entityType.Name;
+            CreatedTables.Add((entityType, tableName));
         }
 
         /// <inheritdoc/>

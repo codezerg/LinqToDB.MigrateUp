@@ -1,7 +1,10 @@
 using FluentAssertions;
+using LinqToDB.MigrateUp.Services;
+using LinqToDB.MigrateUp.Tests.Testing;
 using LinqToDB.MigrateUp.Tests.Infrastructure;
 using LinqToDB.MigrateUp.Tests.TestEntities;
 using LinqToDB.MigrateUp.Tests.TestProfiles;
+using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 
 namespace LinqToDB.MigrateUp.Tests;
@@ -10,13 +13,13 @@ namespace LinqToDB.MigrateUp.Tests;
 public class MigrationTests
 {
     private TestDatabase _database = null!;
-    private TestMigrationLogger _logger = null!;
+    private TestLogger<Migration> _logger = null!;
 
     [SetUp]
     public void SetUp()
     {
         _database = new TestDatabase();
-        _logger = new TestMigrationLogger();
+        _logger = new TestLogger<Migration>();
     }
 
     [TearDown]
@@ -30,7 +33,10 @@ public class MigrationTests
     {
         // Arrange
         using var connection = _database.CreateConnection();
-        var migration = new Migration(connection, logger: _logger);
+        var dataService = new LinqToDbDataConnectionService(connection);
+        var stateManager = new MigrationStateManager();
+        var providerFactory = new DefaultMigrationProviderFactory();
+        var migration = new Migration(dataService, stateManager, providerFactory, _logger);
         var configuration = new MigrationConfiguration(config =>
         {
             config.AddProfile(new PersonMigrationProfile());
@@ -51,7 +57,10 @@ public class MigrationTests
     {
         // Arrange
         using var connection = _database.CreateConnection();
-        var migration = new Migration(connection, logger: _logger);
+        var dataService = new LinqToDbDataConnectionService(connection);
+        var stateManager = new MigrationStateManager();
+        var providerFactory = new DefaultMigrationProviderFactory();
+        var migration = new Migration(dataService, stateManager, providerFactory, _logger);
         var configuration = new MigrationConfiguration(config =>
         {
             config.AddProfile(new PersonMigrationProfile());
@@ -78,7 +87,10 @@ public class MigrationTests
             EnableCaching = true,
             SkipCachedMigrations = true
         };
-        var migration = new Migration(connection, options, logger: _logger);
+        var dataService = new LinqToDbDataConnectionService(connection);
+        var stateManager = new MigrationStateManager();
+        var providerFactory = new DefaultMigrationProviderFactory();
+        var migration = new Migration(dataService, stateManager, providerFactory, _logger, options);
         var configuration = new MigrationConfiguration(config =>
         {
             config.AddProfile(new PersonMigrationProfile());
@@ -86,7 +98,7 @@ public class MigrationTests
 
         // Act - Run twice
         migration.RunForEntity<Person>(configuration);
-        _logger.Clear();
+        _logger.Reset();
         migration.RunForEntity<Person>(configuration);
 
         // Assert
@@ -102,7 +114,10 @@ public class MigrationTests
         {
             EnableCaching = false
         };
-        var migration = new Migration(connection, options, logger: _logger);
+        var dataService = new LinqToDbDataConnectionService(connection);
+        var stateManager = new MigrationStateManager();
+        var providerFactory = new DefaultMigrationProviderFactory();
+        var migration = new Migration(dataService, stateManager, providerFactory, _logger, options);
         var configuration = new MigrationConfiguration(config =>
         {
             config.AddProfile(new PersonMigrationProfile());
@@ -111,7 +126,7 @@ public class MigrationTests
         // Act - Run twice
         migration.RunForEntity<Person>(configuration);
         var firstRunCount = _logger.InfoMessages.Count;
-        _logger.Clear();
+        _logger.Reset();
         migration.RunForEntity<Person>(configuration);
 
         // Assert
@@ -124,7 +139,10 @@ public class MigrationTests
     {
         // Arrange
         using var connection = _database.CreateConnection();
-        var migration = new Migration(connection, logger: _logger);
+        var dataService = new LinqToDbDataConnectionService(connection);
+        var stateManager = new MigrationStateManager();
+        var providerFactory = new DefaultMigrationProviderFactory();
+        var migration = new Migration(dataService, stateManager, providerFactory, _logger);
         var configuration = new MigrationConfiguration(config =>
         {
             config.AddProfile(new PersonMigrationProfile());
@@ -152,7 +170,10 @@ public class MigrationTests
     {
         // Arrange
         using var connection = _database.CreateConnection();
-        var migration = new Migration(connection);
+        var dataService = new LinqToDbDataConnectionService(connection);
+        var stateManager = new MigrationStateManager();
+        var providerFactory = new DefaultMigrationProviderFactory();
+        var migration = new Migration(dataService, stateManager, providerFactory, Microsoft.Extensions.Logging.Abstractions.NullLogger<Migration>.Instance);
         var configuration = new MigrationConfiguration(config =>
         {
             config.AddProfile(new PersonMigrationProfile());
@@ -162,8 +183,8 @@ public class MigrationTests
         migration.Run(configuration);
 
         // Assert
-        migration.TablesCreated.Should().Contain("Persons");
-        migration.IndexesCreated.Should().NotBeEmpty();
+        migration.StateManager.IsTableCreated("Persons").Should().BeTrue();
+        migration.StateManager.IsIndexCreated("IX_Persons_LastName").Should().BeTrue();
     }
 
     private static bool TableExists(LinqToDB.Data.DataConnection connection, string tableName)

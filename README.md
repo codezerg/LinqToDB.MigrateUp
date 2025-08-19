@@ -1,116 +1,117 @@
-# LinqToDB.MigrateUp Library
+# LinqToDB.MigrateUp
 
-`LinqToDB.MigrateUp` is a C# library providing schema migration utilities. It's designed to facilitate database migrations using a fluent syntax that integrates seamlessly with the LINQ to DB framework.
+Database migrations for LinqToDB. One line of code.
 
-## Features
+## Install
 
-- **Migration Profiles**: Create reusable migration profiles to apply changes to your database structure.
-- **Fluent Interface**: Construct migration tasks using a fluent syntax for creating tables, indexes, and importing data.
-- **Extensible Providers**: Out of the box support for SQL Server and SQLite with the capability to add more providers as needed.
+```bash
+dotnet add package LinqToDB.MigrateUp
+```
 
-## Core Interfaces & Classes
+## Use
 
-1. **Migration**: The primary entry point for running migrations against a database.
-2. **MigrationProfile**: Base class for defining migration tasks.
-3. **MigrationConfiguration**: Configure migration profiles to execute.
+```csharp
+services.AddSQLiteMigrations(connectionString);
+```
 
-## Quick Start
+Done. Your database tables are created and updated automatically.
 
-To use `LinqToDB.MigrateUp`:
+## What It Does
 
-1. Create a `MigrationProfile`:
-    ```csharp
-    using LinqToDB.Mapping;
-    using LinqToDB.MigrateUp;
+- Finds all your `[Table]` classes
+- Creates the tables
+- Updates schema changes
+- Runs on startup
 
+## Examples
 
-    [Table]
-    public class Person
+### Basic Setup
+
+```csharp
+// Your entity
+[Table]
+public class User
+{
+    [PrimaryKey, Identity] public int Id { get; set; }
+    [Column] public string Email { get; set; }
+    [Column] public string Name { get; set; }
+}
+
+// Your Program.cs
+services.AddSQLiteMigrations(connectionString);
+
+// That's it. Table is created automatically.
+```
+
+### With SQL Server
+
+```csharp
+services.AddSqlServerMigrations(connectionString);
+```
+
+### More Control
+
+```csharp
+services.AddMigrations(builder => builder
+    .UseSQLite(connectionString)
+    .AutoDiscoverEntities(Assembly.GetExecutingAssembly())
+    .MigrateOnStartup(true));
+```
+
+### Custom Migrations
+
+```csharp
+public class SeedDataProfile : MigrationProfile
+{
+    public SeedDataProfile()
     {
-        [PrimaryKey] public int PersonId { get; set; }
-
-        [Column] public string FirstName { get; set; }
-        [Column] public string LastName { get; set; }
-        [Column] public int Age { get; set; }
-        [Column] public bool IsActive { get; set; }
-        [Column] public DateTime CreatedDate { get; set; }
-        [Column] public DateTime? ModifiedDate { get; set; }
-        [Column] public DateTime? DeletedDate { get; set; }
+        this.CreateTable<Product>();
+        
+        this.CreateIndex<Product>()
+            .HasName("IX_Product_SKU")
+            .AddColumn(p => p.SKU);
+            
+        this.ImportData<Product>()
+            .Key(p => p.Id)
+            .Source(() => new[] {
+                new Product { Id = 1, SKU = "PROD-001", Name = "Widget" },
+                new Product { Id = 2, SKU = "PROD-002", Name = "Gadget" }
+            });
     }
+}
 
+// Add it
+services.AddMigrations(builder => builder
+    .UseSQLite(connectionString)
+    .AddProfile<SeedDataProfile>());
+```
 
-    public class PersonProfile : MigrationProfile
-    {
-        public PersonProfile()
-        {
-            this.CreateTable<Person>();
+### Manual Control
 
-            this.CreateIndex<Person>()
-                .AddColumn(x => x.PersonId)
-                .AddColumn(x => x.IsActive)
-                ;
+```csharp
+// Don't run on startup
+services.AddMigrations(builder => builder
+    .UseSQLite(connectionString)
+    .AutoDiscoverEntities(assembly)
+    .MigrateOnStartup(false));
 
-            this.CreateIndex<Person>()
-                .HasName("IX_Persons_LastName")
-                .AddColumn(x => x.LastName)
-                ;
+// Run when you want
+var runner = serviceProvider.GetRequiredService<IMigrationRunner>();
+await runner.RunAsync();
+```
 
-            this.ImportData<Person>()
-                .Key(x => x.PersonId)
-                .Source(() => RandomPeople())
-                //.WhenTableCreated()
-                //.WhenTableEmpty()
-                ;
-        }
+## Configuration
 
-        IEnumerable<Person> RandomPeople()
-        {
-            var random = new Random();
+```csharp
+services.AddMigrations(builder => builder
+    .UseSQLite(connectionString)                    // Pick your database
+    .AutoDiscoverEntities(assembly)                 // Find entities automatically
+    .AutoDiscoverProfiles(assembly)                 // Find migration profiles
+    .AddProfile<CustomProfile>()                    // Add specific profile
+    .MigrateOnStartup(true)                         // Run on startup
+    .WithOptions(opt => opt.EnableCaching = true)); // Configure options
+```
 
-            yield return GenerateRandomPerson(random, 1);
-            yield return GenerateRandomPerson(random, 2);
-            yield return GenerateRandomPerson(random, 3);
-            yield return GenerateRandomPerson(random, 4);
-            yield return GenerateRandomPerson(random, 5);
-        }
+## License
 
-        static string[] firstNames = new[] { "John", "Jane", "Jack", "Jill", "James", "Jenny" };
-        static string[] lastNames = new[] { "Smith", "Doe", "Johnson", "Williams", "Brown", "Jones" };
-
-        Person GenerateRandomPerson(Random random, int id)
-        {
-            return new Person
-            {
-                PersonId = id,
-                LastName = lastNames[random.Next(0, lastNames.Length)],
-                FirstName = firstNames[random.Next(0, firstNames.Length)],
-                Age = random.Next(18, 100),
-                IsActive = true,
-                CreatedDate = DateTime.UtcNow,
-                ModifiedDate = DateTime.UtcNow,
-                DeletedDate = null,
-            };
-        }
-    }
-    ```
-
-2. Setup the `MigrationConfiguration`:
-    ```csharp
-    var migrationConfiguration = new MigrationConfiguration(config =>
-    {
-        config.AddProfiles(typeof(Program).Assembly);
-    });
-    ```
-
-3. Run migrations:
-    ```csharp
-    var connectionString = ...
-    var dataConnection = new DataConnection(ProviderName.SqlServer, connectionString);
-
-    var migration = new Migration(dataConnection);
-    migration.Run(migrationConfiguration);
-    ```
-
-## Contribute
-
-Contributions to the `LinqToDB.MigrateUp` library are welcome. Check the issues, fork the repository, and submit a pull request!
+MIT

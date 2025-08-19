@@ -63,5 +63,17 @@ namespace LinqToDB.MigrateUp.Services
         {
             return _dataConnection.MappingSchema.GetEntityDescriptor(typeof(T)).Name.Name;
         }
+
+        /// <inheritdoc/>
+        public MappingSchema GetMappingSchema()
+        {
+            return _dataConnection.MappingSchema;
+        }
+
+        /// <inheritdoc/>
+        public LinqToDB.IDataContext? GetDataContext()
+        {
+            return _dataConnection;
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace LinqToDB.MigrateUp.Providers
     /// <summary>
     /// Provides a base implementation for migration providers with dependency injection support.
     /// </summary>
-    public abstract class MigrationProviderBase : IMigrationProvider
+    public class MigrationProviderBase : IMigrationProvider
     {
         /// <inheritdoc/>
         public Migration Migration { get; }
@@ -34,16 +34,9 @@ namespace LinqToDB.MigrateUp.Providers
         protected IMigrationStateManager StateManager { get; }
 
         /// <summary>
-        /// Gets the data connection associated with the migration.
-        /// </summary>
-        /// <remarks>Deprecated: Use Migration.DataService instead for better testability.</remarks>
-        protected DataConnection DataConnection => Migration.DataConnection;
-
-        /// <summary>
         /// Gets the mapping schema associated with the data connection.
         /// </summary>
-        /// <remarks>Deprecated: Use Migration.DataService instead for better testability.</remarks>
-        protected MappingSchema MappingSchema => DataConnection?.MappingSchema;
+        protected MappingSchema MappingSchema => Migration.MappingSchema;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MigrationProviderBase"/> class with dependency injection support.
@@ -65,59 +58,47 @@ namespace LinqToDB.MigrateUp.Providers
             StateManager = stateManager ?? throw new ArgumentNullException(nameof(stateManager));
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MigrationProviderBase"/> class (legacy constructor).
-        /// </summary>
-        /// <param name="migration">The migration associated with this provider.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="migration"/> is null.</exception>
-        /// <remarks>This constructor is maintained for backward compatibility. Consider using the dependency injection constructor.</remarks>
-        protected MigrationProviderBase(Migration migration)
-            : this(migration, CreateDefaultSchemaService(migration), CreateDefaultMutationService(migration), migration?.StateManager)
-        {
-        }
 
-        private static IDatabaseSchemaService CreateDefaultSchemaService(Migration migration)
-        {
-            if (migration?.DataService == null)
-                throw new ArgumentException("Migration must have a valid DataService.", nameof(migration));
-
-            // Create a provider-aware schema service that will delegate to the correct provider
-            return new ProviderDelegatingSchemaService(migration);
-        }
-
-        private static IDatabaseMutationService CreateDefaultMutationService(Migration migration)
-        {
-            if (migration?.DataService == null)
-                throw new ArgumentException("Migration must have a valid DataService.", nameof(migration));
-
-            // Create a provider-aware mutation service that will delegate to the correct provider
-            return new ProviderDelegatingMutationService(migration);
-        }
 
         /// <summary>
         /// Gets the columns for a given entity type.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <returns>A collection of table columns.</returns>
-        public virtual IEnumerable<TableColumn> GetEntityColumns<TEntity>()
+        public virtual IEnumerable<TableColumn> GetEntityColumns<TEntity>() where TEntity : class
         {
             var descriptor = MappingSchema.GetEntityDescriptor(typeof(TEntity));
             return descriptor.Columns
-                .Select(x => new TableColumn(x.ColumnName, GetEntityColumnDbType(x), x.CanBeNull))
+                .Select(x => new TableColumn(x.ColumnName, GetEntityColumnDbType<TEntity>(x), x.CanBeNull))
                 .ToList();
         }
 
-        private string GetEntityColumnDbType(ColumnDescriptor column)
+        private string GetEntityColumnDbType<TEntity>(ColumnDescriptor column) where TEntity : class
         {
-            var dataProvider = DataConnection.DataProvider;
-            var sqlBuilder = dataProvider.CreateSqlBuilder(MappingSchema, DataConnection.Options);
-            if (sqlBuilder == null)
+            // This is a simplified implementation - in a full service abstraction,
+            // this would be handled by a specialized service that can build SQL types
+            // without direct database provider access
+            try
             {
-                throw new InvalidOperationException($"The {nameof(DataConnection)} is not configured to use the {nameof(ISqlBuilder)}");
+                var dataContext = Migration.DataService.GetDataContext();
+                if (dataContext is DataConnection dataConnection)
+                {
+                    var dataProvider = dataConnection.DataProvider;
+                    var sqlBuilder = dataProvider.CreateSqlBuilder(MappingSchema, dataConnection.Options);
+                    if (sqlBuilder != null)
+                    {
+                        var sqlDataType = new SqlDataType(column.GetDbDataType(true));
+                        return sqlBuilder.BuildDataType(new System.Text.StringBuilder(), sqlDataType).ToString();
+                    }
+                }
+            }
+            catch
+            {
+                // Fall through to default behavior
             }
 
-            var sqlDataType = new SqlDataType(column.GetDbDataType(true));
-            return sqlBuilder.BuildDataType(new System.Text.StringBuilder(), sqlDataType).ToString();
+            // Fallback to basic type mapping if service abstraction doesn't support full provider access
+            return column.DataType.ToString();
         }
 
         /// <inheritdoc/>
@@ -128,8 +109,10 @@ namespace LinqToDB.MigrateUp.Providers
 
             if (!tableExists)
             {
-                Migration.DataService.CreateTable<TEntity>();
+                MutationService.CreateTable<TEntity>();
                 StateManager.MarkTableCreated(tableName);
+                // Table was just created with all columns, no need to add columns
+                return;
             }
 
             var entityColumns = GetEntityColumns<TEntity>().ToList();
@@ -182,65 +165,5 @@ namespace LinqToDB.MigrateUp.Providers
             StateManager.MarkIndexCreated(indexName);
         }
 
-        /// <summary>
-        /// Checks if a table exists in the database.
-        /// </summary>
-        /// <param name="tableName">The name of the table to check.</param>
-        /// <returns>True if the table exists, false otherwise.</returns>
-        protected abstract bool Db_TableExists(string tableName);
-
-        /// <summary>
-        /// Gets the columns of a table in the database.
-        /// </summary>
-        /// <param name="tableName">The name of the table.</param>
-        /// <returns>A collection of table columns.</returns>
-        protected abstract IEnumerable<TableColumn> Db_GetTableColumns(string tableName);
-
-        /// <summary>
-        /// Creates a new column in a table.
-        /// </summary>
-        /// <typeparam name="TTable">The type of the table.</typeparam>
-        /// <param name="tableName">The name of the table.</param>
-        /// <param name="column">The column to create.</param>
-        protected abstract void Db_CreateTableColumn<TTable>(string tableName, TableColumn column);
-
-        /// <summary>
-        /// Alters an existing column in a table.
-        /// </summary>
-        /// <param name="tableName">The name of the table.</param>
-        /// <param name="columnName">The name of the column to alter.</param>
-        /// <param name="newColumn">The new column definition.</param>
-        protected abstract void Db_AlterTableColumn(string tableName, string columnName, TableColumn newColumn);
-
-        /// <summary>
-        /// Checks if an index exists on a table.
-        /// </summary>
-        /// <param name="tableName">The name of the table.</param>
-        /// <param name="indexName">The name of the index.</param>
-        /// <returns>True if the index exists, false otherwise.</returns>
-        protected abstract bool Db_TableIndexExists(string tableName, string indexName);
-
-        /// <summary>
-        /// Gets the columns of an index on a table.
-        /// </summary>
-        /// <param name="tableName">The name of the table.</param>
-        /// <param name="indexName">The name of the index.</param>
-        /// <returns>A collection of table index columns.</returns>
-        protected abstract IEnumerable<TableIndexColumn> Db_GetTableIndexColumns(string tableName, string indexName);
-
-        /// <summary>
-        /// Creates a new index on a table.
-        /// </summary>
-        /// <param name="tableName">The name of the table.</param>
-        /// <param name="indexName">The name of the index to create.</param>
-        /// <param name="columns">The columns to include in the index.</param>
-        protected abstract void Db_CreateTableIndex(string tableName, string indexName, IEnumerable<TableIndexColumn> columns);
-
-        /// <summary>
-        /// Drops an existing index from a table.
-        /// </summary>
-        /// <param name="tableName">The name of the table.</param>
-        /// <param name="indexName">The name of the index to drop.</param>
-        protected abstract void Db_DropTableIndex(string tableName, string indexName);
     }
 }

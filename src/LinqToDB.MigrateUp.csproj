@@ -1,13 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Description>LinqToDB.MigrateUp is a C# library providing schema migration utilities. It's designed to facilitate database migrations using a fluent syntax that integrates seamlessly with the LINQ to DB framework.</Description>
 		<RepositoryUrl>https://github.com/codezerg/LinqToDB.MigrateUp</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<Version>1.0.1</Version>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<Nullable>enable</Nullable>
+		<WarningsAsErrors />
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -26,6 +29,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="linq2db" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
 	</ItemGroup>
 
 </Project>

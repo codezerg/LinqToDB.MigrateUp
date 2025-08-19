@@ -12,7 +12,7 @@ namespace LinqToDB.MigrateUp.Expressions
     /// <typeparam name="TSource">The type of the object from which values will be derived for substitution.</typeparam>
     class QueryParameterSubstituter<TSource> : ExpressionVisitor
     {
-        private TSource _substituteValuesFrom;
+        private TSource? _substituteValuesFrom;
         private readonly ParameterExpression _exemptedParameter;
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace LinqToDB.MigrateUp.Expressions
         /// <param name="substituteValuesFrom">The source item from which the values will be derived for substitution.</param>
         /// <returns>An expression where all parameters, except the designated one, have been replaced by values from the provided item.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="expr"/> or <paramref name="substituteValuesFrom"/> is null.</exception>
-        public Expression<Func<TSource, bool>> SubstituteParameters(Expression<Func<TSource, bool>> expr, TSource substituteValuesFrom)
+        public Expression<Func<TSource, bool>> SubstituteParameters(Expression<Func<TSource, bool>> expr, TSource? substituteValuesFrom)
         {
             if (expr == null)
                 throw new ArgumentNullException(nameof(expr));
@@ -59,14 +59,14 @@ namespace LinqToDB.MigrateUp.Expressions
                 && node.Expression.Type == typeof(TSource)
                 && (ParameterExpression)node.Expression != _exemptedParameter)
             {
-                PropertyInfo member = node.Member as PropertyInfo;
+                PropertyInfo? member = node.Member as PropertyInfo;
 
                 if (member == null)
                 {
                     throw new InvalidOperationException($"The member {node.Member.Name} on type {typeof(TSource).Name} is not a property.");
                 }
 
-                object value = member.GetValue(_substituteValuesFrom);
+                object? value = member.GetValue(_substituteValuesFrom);
                 return Expression.Constant(value, member.PropertyType);
             }
 

@@ -1,9 +1,10 @@
 using LinqToDB.MigrateUp.Schema;
+using LinqToDB.MigrateUp.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LinqToDB.MigrateUp.Services.Testing
+namespace LinqToDB.MigrateUp.Tests.Testing
 {
     /// <summary>
     /// Mock implementation of IDatabaseSchemaService for testing purposes.

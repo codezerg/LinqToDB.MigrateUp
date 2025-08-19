@@ -1,4 +1,4 @@
-using LinqToDB.MigrateUp.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 
@@ -15,7 +15,7 @@ namespace LinqToDB.MigrateUp.Services
         /// Initializes a new instance of the MigrationExecutionService.
         /// </summary>
         /// <param name="validator">The configuration validator to use.</param>
-        public MigrationExecutionService(IMigrationConfigurationValidator validator = null)
+        public MigrationExecutionService(IMigrationConfigurationValidator? validator = null)
         {
             _validator = validator ?? new MigrationConfigurationValidator();
         }
@@ -45,7 +45,7 @@ namespace LinqToDB.MigrateUp.Services
                 // Log warnings if any
                 foreach (var warning in validationResult.Warnings)
                 {
-                    migration.Logger.WriteWarning(warning);
+                    migration.Logger.LogWarning(warning);
                     context.RecordWarning(warning);
                 }
 
@@ -53,7 +53,7 @@ namespace LinqToDB.MigrateUp.Services
                 var totalTasks = configuration.Profiles.SelectMany(p => p.Tasks).Count();
                 context.TotalTasks = totalTasks;
 
-                migration.Logger.WriteInfo($"Starting migration execution with {totalTasks} tasks across {configuration.Profiles.Count} profiles");
+                migration.Logger.LogInformation("Starting migration execution with {TotalTasks} tasks across {ProfileCount} profiles", totalTasks, configuration.Profiles.Count);
 
                 // Execute each profile
                 foreach (var profile in configuration.Profiles)
@@ -65,12 +65,12 @@ namespace LinqToDB.MigrateUp.Services
 
                         try
                         {
-                            migration.Logger.WriteInfo($"Executing task {task.GetType().Name} for entity {task.EntityType?.Name ?? "Unknown"}");
+                            migration.Logger.LogInformation("Executing task {TaskType} for entity {EntityType}", task.GetType().Name, task.EntityType?.Name ?? "Unknown");
                             
                             task.Run(migration.MigrationProvider);
                             
                             context.RecordTaskCompleted(task);
-                            migration.Logger.WriteInfo($"Completed task {task.GetType().Name} for entity {task.EntityType?.Name ?? "Unknown"}");
+                            migration.Logger.LogInformation("Completed task {TaskType} for entity {EntityType}", task.GetType().Name, task.EntityType?.Name ?? "Unknown");
                         }
                         catch (Exception ex)
                         {
@@ -78,7 +78,7 @@ namespace LinqToDB.MigrateUp.Services
                                 $"Failed to execute task {task.GetType().Name} for entity {task.EntityType?.Name ?? "Unknown"}: {ex.Message}", ex);
                             
                             context.RecordError(taskException);
-                            migration.Logger.WriteError(taskException.Message);
+                            migration.Logger.LogError(taskException, "Task execution failed");
                             
                             // For now, we'll continue with other tasks even if one fails
                             // In the future, this could be configurable behavior
@@ -90,12 +90,12 @@ namespace LinqToDB.MigrateUp.Services
 
                 if (context.HasErrors)
                 {
-                    migration.Logger.WriteError($"Migration completed with {context.Errors.Count} errors and {context.Warnings.Count} warnings in {context.ElapsedTime.TotalSeconds:F2} seconds");
+                    migration.Logger.LogError("Migration completed with {ErrorCount} errors and {WarningCount} warnings in {ElapsedSeconds:F2} seconds", context.Errors.Count, context.Warnings.Count, context.ElapsedTime.TotalSeconds);
                     return MigrationResult.Failed(context.Errors.First(), context);
                 }
                 else
                 {
-                    migration.Logger.WriteInfo($"Migration completed successfully with {context.Warnings.Count} warnings in {context.ElapsedTime.TotalSeconds:F2} seconds");
+                    migration.Logger.LogInformation("Migration completed successfully with {WarningCount} warnings in {ElapsedSeconds:F2} seconds", context.Warnings.Count, context.ElapsedTime.TotalSeconds);
                     return MigrationResult.Success(context);
                 }
             }
@@ -103,7 +103,7 @@ namespace LinqToDB.MigrateUp.Services
             {
                 context.Stop();
                 context.RecordError(ex);
-                migration.Logger.WriteError($"Migration failed with unexpected error: {ex.Message}");
+                migration.Logger.LogError(ex, "Migration failed with unexpected error");
                 return MigrationResult.Failed(ex, context);
             }
         }
@@ -133,7 +133,7 @@ namespace LinqToDB.MigrateUp.Services
                 // Log warnings if any
                 foreach (var warning in validationResult.Warnings)
                 {
-                    migration.Logger.WriteWarning(warning);
+                    migration.Logger.LogWarning(warning);
                     context.RecordWarning(warning);
                 }
 
@@ -148,7 +148,7 @@ namespace LinqToDB.MigrateUp.Services
 
                 context.TotalTasks = entityTasks.Count;
 
-                migration.Logger.WriteInfo($"Starting entity-specific migration for {entityType.Name} with {entityTasks.Count} tasks");
+                migration.Logger.LogInformation("Starting entity-specific migration for {EntityType} with {TaskCount} tasks", entityType.Name, entityTasks.Count);
 
                 // Execute tasks for the specific entity
                 foreach (var task in entityTasks)
@@ -157,12 +157,12 @@ namespace LinqToDB.MigrateUp.Services
 
                     try
                     {
-                        migration.Logger.WriteInfo($"Executing task {task.GetType().Name} for entity {entityType.Name}");
+                        migration.Logger.LogInformation("Executing task {TaskType} for entity {EntityType}", task.GetType().Name, entityType.Name);
                         
                         task.Run(migration.MigrationProvider);
                         
                         context.RecordTaskCompleted(task);
-                        migration.Logger.WriteInfo($"Completed task {task.GetType().Name} for entity {entityType.Name}");
+                        migration.Logger.LogInformation("Completed task {TaskType} for entity {EntityType}", task.GetType().Name, entityType.Name);
                     }
                     catch (Exception ex)
                     {
@@ -170,7 +170,7 @@ namespace LinqToDB.MigrateUp.Services
                             $"Failed to execute task {task.GetType().Name} for entity {entityType.Name}: {ex.Message}", ex);
                         
                         context.RecordError(taskException);
-                        migration.Logger.WriteError(taskException.Message);
+                        migration.Logger.LogError(taskException, "Task execution failed");
                     }
                 }
 
@@ -178,12 +178,12 @@ namespace LinqToDB.MigrateUp.Services
 
                 if (context.HasErrors)
                 {
-                    migration.Logger.WriteError($"Entity migration for {entityType.Name} completed with {context.Errors.Count} errors and {context.Warnings.Count} warnings in {context.ElapsedTime.TotalSeconds:F2} seconds");
+                    migration.Logger.LogError("Entity migration for {EntityType} completed with {ErrorCount} errors and {WarningCount} warnings in {ElapsedSeconds:F2} seconds", entityType.Name, context.Errors.Count, context.Warnings.Count, context.ElapsedTime.TotalSeconds);
                     return MigrationResult.Failed(context.Errors.First(), context);
                 }
                 else
                 {
-                    migration.Logger.WriteInfo($"Entity migration for {entityType.Name} completed successfully with {context.Warnings.Count} warnings in {context.ElapsedTime.TotalSeconds:F2} seconds");
+                    migration.Logger.LogInformation("Entity migration for {EntityType} completed successfully with {WarningCount} warnings in {ElapsedSeconds:F2} seconds", entityType.Name, context.Warnings.Count, context.ElapsedTime.TotalSeconds);
                     return MigrationResult.Success(context);
                 }
             }
@@ -191,7 +191,7 @@ namespace LinqToDB.MigrateUp.Services
             {
                 context.Stop();
                 context.RecordError(ex);
-                migration.Logger.WriteError($"Entity migration for {typeof(TEntity).Name} failed with unexpected error: {ex.Message}");
+                migration.Logger.LogError(ex, "Entity migration for {EntityType} failed with unexpected error", typeof(TEntity).Name);
                 return MigrationResult.Failed(ex, context);
             }
         }

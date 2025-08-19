@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LinqToDB.Mapping;
+using LinqToDB.MigrateUp.Services;
 
-namespace LinqToDB.MigrateUp.Services.Testing
+namespace LinqToDB.MigrateUp.Tests.Testing
 {
     /// <summary>
     /// Mock implementation of IDataConnectionService for testing purposes.
@@ -108,8 +110,26 @@ namespace LinqToDB.MigrateUp.Services.Testing
         /// <inheritdoc/>
         public string GetEntityName<T>() where T : class
         {
-            // Simple implementation - just use the type name
-            return typeof(T).Name;
+            // Check for [Table] attribute to get the correct table name
+            var tableAttribute = typeof(T).GetCustomAttributes(typeof(LinqToDB.Mapping.TableAttribute), false)
+                .Cast<LinqToDB.Mapping.TableAttribute>()
+                .FirstOrDefault();
+            
+            return tableAttribute?.Name ?? typeof(T).Name;
+        }
+
+        /// <inheritdoc/>
+        public MappingSchema GetMappingSchema()
+        {
+            // Return a default mapping schema for testing
+            return MappingSchema.Default;
+        }
+
+        /// <inheritdoc/>
+        public LinqToDB.IDataContext? GetDataContext()
+        {
+            // For testing, return null as we don't have a real data context
+            return null;
         }
     }
 }

@@ -1,5 +1,7 @@
 using FluentAssertions;
 using LinqToDB.MigrateUp.Expressions;
+using LinqToDB.MigrateUp.Services;
+using LinqToDB.MigrateUp.Tests.Testing;
 using LinqToDB.MigrateUp.Tests.Infrastructure;
 using LinqToDB.MigrateUp.Tests.Providers;
 using LinqToDB.MigrateUp.Tests.TestEntities;
@@ -18,9 +20,17 @@ public class CreateTableExpressionTests
     public void SetUp()
     {
         _database = new TestDatabase();
-        using var connection = _database.CreateConnection();
-        _migration = new Migration(connection);
-        _provider = new TestMigrationProvider(_migration);
+        
+        // Use complete mock setup for expression tests
+        var mockDataService = new MockDataConnectionService();
+        var mockSchemaService = new MockDatabaseSchemaService();
+        var mockMutationService = new MockDatabaseMutationService();
+        var mockStateManager = new MockMigrationStateManager();
+        var mockProviderFactory = new MockProviderFactory();
+        var logger = new TestLogger<Migration>();
+        
+        _migration = new Migration(mockDataService, mockStateManager, mockProviderFactory, logger);
+        _provider = new TestMigrationProvider(_migration, mockSchemaService, mockMutationService, mockStateManager);
     }
 
     [TearDown]

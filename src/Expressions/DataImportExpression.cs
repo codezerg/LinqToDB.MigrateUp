@@ -16,11 +16,11 @@ namespace LinqToDB.MigrateUp.Expressions
         where TEntity : class
     {
         private readonly IDataImportService<TEntity> _importService;
-        private readonly IExpressionBuilder<TEntity> _expressionBuilder;
+        private readonly ExpressionBuilder<TEntity> _expressionBuilder;
         private readonly DataImportConfiguration _configuration;
         
-        private Func<IEnumerable<TEntity>> _sourceFunc;
-        private Expression<Func<TEntity, bool>> _templateKeyMatchExpression;
+        private Func<IEnumerable<TEntity>>? _sourceFunc;
+        private Expression<Func<TEntity, bool>>? _templateKeyMatchExpression;
         private readonly ParameterExpression _parameter = Expression.Parameter(typeof(TEntity));
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace LinqToDB.MigrateUp.Expressions
         /// <param name="importService">The data import service.</param>
         /// <param name="expressionBuilder">The expression builder service.</param>
         /// <exception cref="ArgumentNullException">Thrown if any parameter is null.</exception>
-        public DataImportExpression(MigrationProfile profile, IDataImportService<TEntity> importService, IExpressionBuilder<TEntity> expressionBuilder)
+        public DataImportExpression(MigrationProfile profile, IDataImportService<TEntity> importService, ExpressionBuilder<TEntity> expressionBuilder)
         {
             Profile = profile ?? throw new ArgumentNullException(nameof(profile));
             _importService = importService ?? throw new ArgumentNullException(nameof(importService));
@@ -146,10 +146,11 @@ namespace LinqToDB.MigrateUp.Expressions
             }
 
             var sourceItems = PrepareSourceItems(source);
-            var combinedExpression = _expressionBuilder.CombineExpressionsWithOr(sourceItems.Select(x => x.MatchExpression).Where(x => x != null));
+            var validExpressions = sourceItems.Select(x => x.MatchExpression).Where(x => x != null).Cast<Expression<Func<TEntity, bool>>>();
+            var combinedExpression = _expressionBuilder.CombineExpressionsWithOr(validExpressions);
             var existingItems = FetchExistingItems(table, combinedExpression);
-            var matchFunctions = sourceItems.Select(x => x.MatchFunc).Where(x => x != null);
-            var itemsToInsert = _importService.GetItemsToInsert(sourceItems.Select(x => x.Data), existingItems, matchFunctions);
+            var validMatchFunctions = sourceItems.Select(x => x.MatchFunc).Where(x => x != null).Cast<Func<TEntity, bool>>();
+            var itemsToInsert = _importService.GetItemsToInsert(sourceItems.Select(x => x.Data), existingItems, validMatchFunctions);
 
             if (itemsToInsert.Any())
             {
@@ -171,26 +172,26 @@ namespace LinqToDB.MigrateUp.Expressions
                 {
                     Data = x.Data,
                     MatchExpression = x.MatchExpression,
-                    MatchFunc = x.MatchExpression.Compile()
+                    MatchFunc = x.MatchExpression?.Compile()
                 })
                 .ToList();
         }
 
-        private List<TEntity> FetchExistingItems(IQueryable<TEntity> table, Expression<Func<TEntity, bool>> combinedExpression)
+        private List<TEntity> FetchExistingItems(IQueryable<TEntity> table, Expression<Func<TEntity, bool>>? combinedExpression)
         {
             return combinedExpression == null ? new List<TEntity>() : table.Where(combinedExpression).ToList();
         }
 
-        private Expression<Func<TEntity, bool>> GetKeyMatchExpression(TEntity item)
+        private Expression<Func<TEntity, bool>>? GetKeyMatchExpression(TEntity item)
         {
             return _expressionBuilder.BuildKeyMatchExpression(item, _templateKeyMatchExpression);
         }
 
         private class SourceItem
         {
-            public TEntity Data { get; set; }
-            public Expression<Func<TEntity, bool>> MatchExpression { get; set; }
-            public Func<TEntity, bool> MatchFunc { get; set; }
+            public TEntity Data { get; set; } = default!;
+            public Expression<Func<TEntity, bool>>? MatchExpression { get; set; }
+            public Func<TEntity, bool>? MatchFunc { get; set; }
         }
     }
 }

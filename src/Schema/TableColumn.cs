@@ -20,13 +20,13 @@ namespace LinqToDB.MigrateUp.Schema
             IsNullable = isNullable;
         }
 
-        public int CompareTo(TableColumn other)
+        public int CompareTo(TableColumn? other)
         {
             if (other == null) return 1;
             return string.Compare(ColumnName, other.ColumnName, StringComparison.OrdinalIgnoreCase);
         }
 
-        public bool Equals(TableColumn other)
+        public bool Equals(TableColumn? other)
         {
             if (other == null) return false;
             return string.Equals(ColumnName, other.ColumnName, StringComparison.OrdinalIgnoreCase) &&
@@ -34,7 +34,7 @@ namespace LinqToDB.MigrateUp.Schema
                    IsNullable == other.IsNullable;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as TableColumn);
         }

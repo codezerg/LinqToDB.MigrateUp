@@ -19,7 +19,7 @@ namespace LinqToDB.MigrateUp.Schema
             IsAscending = isAscending;
         }
 
-        public int CompareTo(TableIndexColumn other)
+        public int CompareTo(TableIndexColumn? other)
         {
             if (other == null) return 1; // Current instance comes after null
 
@@ -29,14 +29,14 @@ namespace LinqToDB.MigrateUp.Schema
             return IsAscending.CompareTo(other.IsAscending);
         }
 
-        public bool Equals(TableIndexColumn other)
+        public bool Equals(TableIndexColumn? other)
         {
             if (other == null) return false;
             return string.Equals(ColumnName, other.ColumnName, StringComparison.OrdinalIgnoreCase) &&
                    IsAscending == other.IsAscending;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as TableIndexColumn);
         }

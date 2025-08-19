@@ -1,9 +1,10 @@
 ﻿using LinqToDB.Data;
 using LinqToDB.Mapping;
 using LinqToDB.MigrateUp.Caching;
-using LinqToDB.MigrateUp.Logging;
 using LinqToDB.MigrateUp.Schema;
 using LinqToDB.MigrateUp.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +18,7 @@ namespace LinqToDB.MigrateUp
     /// </summary>
     public class Migration
     {
-        /// <summary>
-        /// Gets the data connection associated with the migration.
-        /// </summary>
-        public DataConnection DataConnection { get; }
-        public MappingSchema MappingSchema => DataConnection?.MappingSchema;
+        public MappingSchema MappingSchema => DataService.GetMappingSchema();
         internal IMigrationProvider MigrationProvider { get; }
 
         /// <summary>
@@ -35,19 +32,8 @@ namespace LinqToDB.MigrateUp
         public IMigrationStateManager StateManager { get; }
 
         public MigrationOptions Options { get; }
-        public IMigrationLogger Logger { get; }
+        public ILogger<Migration> Logger { get; }
 
-        /// <summary>
-        /// Gets the collection of indexes created during migration.
-        /// </summary>
-        /// <remarks>Deprecated: Use StateManager.IsIndexCreated() instead.</remarks>
-        public HashSet<string> IndexesCreated { get; } = new HashSet<string>();
-
-        /// <summary>
-        /// Gets the collection of tables created during migration.
-        /// </summary>
-        /// <remarks>Deprecated: Use StateManager.IsTableCreated() instead.</remarks>
-        public HashSet<string> TablesCreated { get; } = new HashSet<string>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Migration"/> class with dependency injection support.
@@ -61,44 +47,17 @@ namespace LinqToDB.MigrateUp
             IDataConnectionService dataService,
             IMigrationStateManager stateManager,
             IMigrationProviderFactory providerFactory,
-            IMigrationLogger logger,
-            MigrationOptions options = null)
+            ILogger<Migration> logger,
+            MigrationOptions? options = null)
         {
             DataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
             StateManager = stateManager ?? throw new ArgumentNullException(nameof(stateManager));
             Options = options ?? new MigrationOptions();
-            Logger = logger ?? new NullMigrationLogger();
+            Logger = logger ?? NullLogger<Migration>.Instance;
             MigrationProvider = (providerFactory ?? new DefaultMigrationProviderFactory()).CreateProvider(this);
 
-            // Wire up the state manager events to maintain compatibility with legacy HashSets
-            StateManager.TableCreated += (sender, tableName) => TablesCreated.Add(tableName);
-            StateManager.IndexCreated += (sender, indexName) => IndexesCreated.Add(indexName);
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Migration"/> class with the specified data connection (legacy constructor).
-        /// </summary>
-        /// <param name="connection">The data connection associated with the migration.</param>
-        /// <param name="options">The migration options.</param>
-        /// <param name="providerFactory">The migration provider factory.</param>
-        /// <param name="logger">The migration logger.</param>
-        /// <remarks>This constructor is maintained for backward compatibility. Consider using the dependency injection constructor.</remarks>
-        public Migration(DataConnection connection, MigrationOptions options = null, IMigrationProviderFactory providerFactory = null, IMigrationLogger logger = null)
-        {
-            // Set DataConnection first so it's available during provider factory creation
-            DataConnection = connection ?? throw new ArgumentNullException(nameof(connection));
-            
-            // Initialize services and state
-            DataService = new LinqToDbDataConnectionService(connection);
-            StateManager = new MigrationStateManager();
-            Options = options ?? new MigrationOptions();
-            Logger = logger ?? new NullMigrationLogger();
-            MigrationProvider = (providerFactory ?? new DefaultMigrationProviderFactory()).CreateProvider(this);
-
-            // Wire up the state manager events to maintain compatibility with legacy HashSets
-            StateManager.TableCreated += (sender, tableName) => TablesCreated.Add(tableName);
-            StateManager.IndexCreated += (sender, indexName) => IndexesCreated.Add(indexName);
-        }
 
 
         internal string GetEntityName<TEntity>() where TEntity : class
@@ -155,11 +114,11 @@ namespace LinqToDB.MigrateUp
 
                 if (Options.Cache.IsTaskExecuted(entityType, taskType, taskHash))
                 {
-                    Logger.WriteInfo($"Skipping cached migration task {taskType.Name} for entity {entityType.Name}");
+                    Logger.LogInformation("Skipping cached migration task {TaskType} for entity {EntityType}", taskType.Name, entityType.Name);
                     return;
                 }
 
-                Logger.WriteInfo($"Executing migration task {taskType.Name} for entity {entityType.Name}");
+                Logger.LogInformation("Executing migration task {TaskType} for entity {EntityType}", taskType.Name, entityType.Name);
                 task.Run(MigrationProvider);
 
                 Options.Cache.MarkTaskExecuted(entityType, taskType, taskHash);

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using LinqToDB.MigrateUp.Services;
 
-namespace LinqToDB.MigrateUp.Services.Testing
+namespace LinqToDB.MigrateUp.Tests.Testing
 {
     /// <summary>
     /// Mock implementation of IMigrationStateManager for testing purposes.
@@ -28,10 +29,10 @@ namespace LinqToDB.MigrateUp.Services.Testing
         public IReadOnlyCollection<string> IndexesCreated => _indexesCreated;
 
         /// <inheritdoc/>
-        public event EventHandler<string> TableCreated;
+        public event EventHandler<string>? TableCreated;
 
         /// <inheritdoc/>
-        public event EventHandler<string> IndexCreated;
+        public event EventHandler<string>? IndexCreated;
 
         /// <summary>
         /// Clears all tracking information.

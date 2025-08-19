@@ -26,5 +26,17 @@ namespace LinqToDB.MigrateUp
         /// of cache state. Defaults to true.
         /// </summary>
         public bool SkipCachedMigrations { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets whether to automatically run migrations on application startup.
+        /// Used by MigrationHostedService. Defaults to false.
+        /// </summary>
+        public bool AutoMigrateOnStartup { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets whether to throw an exception if migration fails during startup.
+        /// If false, errors are logged but the application continues. Defaults to false.
+        /// </summary>
+        public bool ThrowOnMigrationFailure { get; set; } = false;
     }
 }

@@ -1,3 +1,4 @@
+using LinqToDB.MigrateUp.Helpers;
 using LinqToDB.MigrateUp.Schema;
 using System;
 using System.Collections.Generic;
@@ -25,13 +26,20 @@ namespace LinqToDB.MigrateUp.Services
         }
 
         /// <inheritdoc/>
+        public void CreateTable<TEntity>() where TEntity : class
+        {
+            _dataService.CreateTable<TEntity>();
+        }
+
+        /// <inheritdoc/>
         public void CreateTableColumn<TTable>(string tableName, TableColumn column)
         {
-            if (string.IsNullOrWhiteSpace(tableName))
-                throw new ArgumentException("Table name cannot be null or whitespace.", nameof(tableName));
+            ValidationHelper.ValidateSqlIdentifier(tableName, nameof(tableName));
             
             if (column == null)
                 throw new ArgumentNullException(nameof(column));
+
+            ValidationHelper.ValidateSqlIdentifier(column.ColumnName, nameof(column.ColumnName));
 
             var columnDefinition = BuildColumnDefinition(column);
             var command = _queryService.BuildAddColumnCommand(tableName, columnDefinition);
@@ -41,14 +49,13 @@ namespace LinqToDB.MigrateUp.Services
         /// <inheritdoc/>
         public void AlterTableColumn(string tableName, string columnName, TableColumn newColumn)
         {
-            if (string.IsNullOrWhiteSpace(tableName))
-                throw new ArgumentException("Table name cannot be null or whitespace.", nameof(tableName));
-            
-            if (string.IsNullOrWhiteSpace(columnName))
-                throw new ArgumentException("Column name cannot be null or whitespace.", nameof(columnName));
+            ValidationHelper.ValidateSqlIdentifier(tableName, nameof(tableName));
+            ValidationHelper.ValidateSqlIdentifier(columnName, nameof(columnName));
             
             if (newColumn == null)
                 throw new ArgumentNullException(nameof(newColumn));
+                
+            ValidationHelper.ValidateSqlIdentifier(newColumn.ColumnName, nameof(newColumn.ColumnName));
 
             var columnDefinition = BuildColumnDefinition(newColumn);
             var command = _queryService.BuildAlterColumnCommand(tableName, columnName, columnDefinition);
@@ -58,14 +65,17 @@ namespace LinqToDB.MigrateUp.Services
         /// <inheritdoc/>
         public void CreateTableIndex(string tableName, string indexName, IEnumerable<TableIndexColumn> columns)
         {
-            if (string.IsNullOrWhiteSpace(tableName))
-                throw new ArgumentException("Table name cannot be null or whitespace.", nameof(tableName));
-            
-            if (string.IsNullOrWhiteSpace(indexName))
-                throw new ArgumentException("Index name cannot be null or whitespace.", nameof(indexName));
+            ValidationHelper.ValidateSqlIdentifier(tableName, nameof(tableName));
+            ValidationHelper.ValidateSqlIdentifier(indexName, nameof(indexName));
             
             if (columns == null || !columns.Any())
                 throw new ArgumentException("At least one column is required for the index.", nameof(columns));
+
+            // Validate each column name
+            foreach (var column in columns)
+            {
+                ValidationHelper.ValidateSqlIdentifier(column.ColumnName, nameof(column.ColumnName));
+            }
 
             var columnNames = columns.Select(c => c.ColumnName).ToArray();
             var command = _queryService.BuildCreateIndexCommand(tableName, indexName, columnNames);
@@ -75,11 +85,8 @@ namespace LinqToDB.MigrateUp.Services
         /// <inheritdoc/>
         public void DropTableIndex(string tableName, string indexName)
         {
-            if (string.IsNullOrWhiteSpace(tableName))
-                throw new ArgumentException("Table name cannot be null or whitespace.", nameof(tableName));
-            
-            if (string.IsNullOrWhiteSpace(indexName))
-                throw new ArgumentException("Index name cannot be null or whitespace.", nameof(indexName));
+            ValidationHelper.ValidateSqlIdentifier(tableName, nameof(tableName));
+            ValidationHelper.ValidateSqlIdentifier(indexName, nameof(indexName));
 
             var command = _queryService.BuildDropIndexCommand(tableName, indexName);
             _dataService.Execute(command);

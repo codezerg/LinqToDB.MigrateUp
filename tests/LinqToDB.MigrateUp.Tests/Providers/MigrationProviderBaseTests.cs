@@ -1,6 +1,7 @@
 using FluentAssertions;
 using LinqToDB.MigrateUp.Providers;
 using LinqToDB.MigrateUp.Schema;
+using LinqToDB.MigrateUp.Tests.Testing;
 using LinqToDB.MigrateUp.Tests.Infrastructure;
 using LinqToDB.MigrateUp.Tests.TestEntities;
 using NUnit.Framework;
@@ -12,13 +13,17 @@ public class MigrationProviderBaseTests
 {
     private TestDatabase _database = null!;
     private TestMigrationProvider _provider = null!;
+    private MockMigrationStateManager _mockStateManager = null!;
 
     [SetUp]
     public void SetUp()
     {
         _database = new TestDatabase();
         var migration = _database.CreateMigration();
-        _provider = new TestMigrationProvider(migration);
+        var mockSchemaService = new MockDatabaseSchemaService();
+        var mockMutationService = new MockDatabaseMutationService();
+        _mockStateManager = new MockMigrationStateManager();
+        _provider = new TestMigrationProvider(migration, mockSchemaService, mockMutationService, _mockStateManager);
     }
 
     [TearDown]
@@ -52,7 +57,7 @@ public class MigrationProviderBaseTests
 
         // Assert
         _provider.CreatedTables.Should().Contain("Persons");
-        _provider.Migration.TablesCreated.Should().Contain("Persons");
+        _mockStateManager.IsTableCreated("Persons").Should().BeTrue();
     }
 
     [Test]

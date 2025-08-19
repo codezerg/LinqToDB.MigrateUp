@@ -7,10 +7,10 @@ namespace LinqToDB.MigrateUp.Providers
 {
     internal class SqlServerDataType
     {
-        public string BaseType { get; private set; }
+        public string BaseType { get; private set; } = string.Empty;
         public int? Precision { get; private set; }
         public int? Scale { get; private set; }
-        public string MaxLength { get; private set; }
+        public string? MaxLength { get; private set; }
 
         private static readonly Regex DataTypeRegex = new Regex(
             @"^(\w+)\s*(?:\(\s*((?:max|\d+)(?:\s*,\s*(\d+))?)?\s*\))?$",
@@ -37,7 +37,7 @@ namespace LinqToDB.MigrateUp.Providers
             Parse(dataTypeString.ToLower());
         }
 
-        public SqlServerDataType(string baseType, string maxLength = null, int? precision = null, int? scale = null)
+        public SqlServerDataType(string baseType, string? maxLength = null, int? precision = null, int? scale = null)
         {
             BaseType = baseType;
             if (TypesWithMaxLength.Contains(baseType))
