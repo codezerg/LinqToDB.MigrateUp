@@ -25,18 +25,10 @@ internal class TestMigrationProvider : MigrationProviderBase
 
     public TestMigrationProvider(Migration migration) : base(migration)
     {
-        // Extract the mock services from the migration if available
-        if (migration.DataService is MockDataConnectionService mockDataService)
-        {
-            _mockDataService = mockDataService;
-        }
-        else
-        {
-            _mockDataService = new MockDataConnectionService();
-        }
-
-        _mockSchemaService = SchemaService as MockDatabaseSchemaService ?? new MockDatabaseSchemaService();
-        _mockMutationService = MutationService as MockDatabaseMutationService ?? new MockDatabaseMutationService();
+        // Initialize mock services
+        _mockDataService = new MockDataConnectionService();
+        _mockSchemaService = new MockDatabaseSchemaService();
+        _mockMutationService = new MockDatabaseMutationService();
     }
 
     public static TestMigrationProvider CreateWithMocks(Migration migration)
@@ -74,8 +66,7 @@ internal class TestMigrationProvider : MigrationProviderBase
         _mockSchemaService.SetIndexColumns(tableName, indexName, columns);
     }
 
-    // Override the deprecated abstract methods to prevent compilation issues
-    // These will delegate to the service-based implementations in the base class
+    // Override the abstract methods to use our mock services
     protected override bool Db_TableExists(string tableName)
     {
         return _mockSchemaService.TableExists(tableName);

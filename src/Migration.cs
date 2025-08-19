@@ -84,14 +84,20 @@ namespace LinqToDB.MigrateUp
         /// <param name="logger">The migration logger.</param>
         /// <remarks>This constructor is maintained for backward compatibility. Consider using the dependency injection constructor.</remarks>
         public Migration(DataConnection connection, MigrationOptions options = null, IMigrationProviderFactory providerFactory = null, IMigrationLogger logger = null)
-            : this(
-                new LinqToDbDataConnectionService(connection), 
-                new MigrationStateManager(), 
-                providerFactory, 
-                logger ?? new NullMigrationLogger(), 
-                options)
         {
-            DataConnection = connection;
+            // Set DataConnection first so it's available during provider factory creation
+            DataConnection = connection ?? throw new ArgumentNullException(nameof(connection));
+            
+            // Initialize services and state
+            DataService = new LinqToDbDataConnectionService(connection);
+            StateManager = new MigrationStateManager();
+            Options = options ?? new MigrationOptions();
+            Logger = logger ?? new NullMigrationLogger();
+            MigrationProvider = (providerFactory ?? new DefaultMigrationProviderFactory()).CreateProvider(this);
+
+            // Wire up the state manager events to maintain compatibility with legacy HashSets
+            StateManager.TableCreated += (sender, tableName) => TablesCreated.Add(tableName);
+            StateManager.IndexCreated += (sender, indexName) => IndexesCreated.Add(indexName);
         }
 
 

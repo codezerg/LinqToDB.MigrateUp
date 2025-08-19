@@ -94,7 +94,7 @@ public class BasicMigrationTests
     public void Migration_TracksCreatedTables()
     {
         // Arrange
-        var migration = _database.CreateMigration();
+        var migration = _database.CreateMigration(logger: _logger);
         var configuration = new MigrationConfiguration(config =>
         {
             config.AddProfile(new PersonMigrationProfile());

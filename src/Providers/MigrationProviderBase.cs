@@ -81,19 +81,8 @@ namespace LinqToDB.MigrateUp.Providers
             if (migration?.DataService == null)
                 throw new ArgumentException("Migration must have a valid DataService.", nameof(migration));
 
-            // Determine the correct query service based on the database provider
-            ISqlQueryService queryService;
-            if (migration.DataConnection != null && 
-                migration.DataConnection.DataProvider.Name.ToUpperInvariant().Contains("SQLITE"))
-            {
-                queryService = new SQLiteQueryService();
-            }
-            else
-            {
-                queryService = new SqlServerQueryService(); // Default to SQL Server
-            }
-            
-            return new DatabaseSchemaService(migration.DataService, queryService);
+            // Create a provider-aware schema service that will delegate to the correct provider
+            return new ProviderDelegatingSchemaService(migration);
         }
 
         private static IDatabaseMutationService CreateDefaultMutationService(Migration migration)
@@ -101,19 +90,8 @@ namespace LinqToDB.MigrateUp.Providers
             if (migration?.DataService == null)
                 throw new ArgumentException("Migration must have a valid DataService.", nameof(migration));
 
-            // Determine the correct query service based on the database provider  
-            ISqlQueryService queryService;
-            if (migration.DataConnection != null && 
-                migration.DataConnection.DataProvider.Name.ToUpperInvariant().Contains("SQLITE"))
-            {
-                queryService = new SQLiteQueryService();
-            }
-            else
-            {
-                queryService = new SqlServerQueryService(); // Default to SQL Server
-            }
-            
-            return new DatabaseMutationService(migration.DataService, queryService);
+            // Create a provider-aware mutation service that will delegate to the correct provider
+            return new ProviderDelegatingMutationService(migration);
         }
 
         /// <summary>
