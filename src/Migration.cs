@@ -42,8 +42,8 @@ public class Migration
     public Migration(
         IDataConnectionService dataService,
         IMigrationStateManager stateManager,
-        IMigrationProviderFactory providerFactory,
-        ILogger<Migration> logger,
+        IMigrationProviderFactory? providerFactory = null,
+        ILogger<Migration>? logger = null,
         MigrationOptions? options = null)
     {
         DataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
