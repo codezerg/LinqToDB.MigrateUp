@@ -31,6 +31,11 @@ namespace LinqToDB.MigrateUp.Tests.Testing
         public List<string> ExecutedSql => new List<string>(_executedSql);
 
         /// <summary>
+        /// Gets the list of executed commands (alias for ExecutedSql).
+        /// </summary>
+        public List<string> GetExecutedCommands() => ExecutedSql;
+
+        /// <summary>
         /// Gets or sets the return value for Execute operations.
         /// </summary>
         public int ExecuteReturnValue { get; set; } = 1;

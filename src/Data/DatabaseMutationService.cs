@@ -59,7 +59,7 @@ public class DatabaseMutationService : IDatabaseMutationService
             
         ValidationHelper.ValidateSqlIdentifier(newColumn.ColumnName, nameof(newColumn.ColumnName));
 
-        var columnDefinition = BuildColumnDefinition(newColumn);
+        var columnDefinition = BuildAlterColumnDefinition(newColumn);
         var command = _queryService.BuildAlterColumnCommand(tableName, columnName, columnDefinition);
         _dataService.Execute(command);
     }
@@ -98,5 +98,11 @@ public class DatabaseMutationService : IDatabaseMutationService
     {
         var nullable = column.IsNullable ? "NULL" : "NOT NULL";
         return $"[{column.ColumnName}] {column.DataType} {nullable}";
+    }
+
+    private string BuildAlterColumnDefinition(TableColumn column)
+    {
+        var nullable = column.IsNullable ? "NULL" : "NOT NULL";
+        return $"{column.DataType} {nullable}";
     }
 }
