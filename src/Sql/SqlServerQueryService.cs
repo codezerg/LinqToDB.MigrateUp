@@ -21,12 +21,9 @@ public class SqlServerQueryService : SqlQueryServiceBase
     /// <inheritdoc/>
     public override string BuildIndexExistsQuery(string tableName, string indexName)
     {
-        return $@"
-                SELECT CASE WHEN EXISTS (
-                    SELECT 1 FROM sys.indexes i
+        return $@"SELECT * FROM sys.indexes i
                     INNER JOIN sys.tables t ON i.object_id = t.object_id
-                    WHERE t.name = '{tableName}' AND i.name = '{indexName}'
-                ) THEN 1 ELSE 0 END";
+                    WHERE t.name = '{tableName}' AND i.name = '{indexName}'";
     }
 
     /// <inheritdoc/>

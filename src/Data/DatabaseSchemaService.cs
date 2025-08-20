@@ -57,7 +57,7 @@ public class DatabaseSchemaService : IDatabaseSchemaService
         try
         {
             var query = _queryService.BuildIndexExistsQuery(tableName, indexName);
-            var result = _dataService.Execute(query);
+            var result = _dataService.Query(query).Count();
             return result > 0;
         }
         catch

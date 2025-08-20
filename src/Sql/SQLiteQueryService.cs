@@ -16,7 +16,7 @@ public class SQLiteQueryService : SqlQueryServiceBase
     /// <inheritdoc/>
     public override string BuildIndexExistsQuery(string tableName, string indexName)
     {
-        return $"SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='{indexName}' AND tbl_name='{tableName}'";
+        return $"SELECT * FROM sqlite_master WHERE type='index' AND name='{indexName}' AND tbl_name='{tableName}'";
     }
 
     /// <inheritdoc/>
